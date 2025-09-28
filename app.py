@@ -100,7 +100,7 @@ def show_upload_section():
                     st.session_state.data_uploaded = True
                     
                     st.success("✅ Sample data loaded successfully!")
-                    st.rerun()
+                    # Remove automatic rerun to prevent flickering
                     
                 except Exception as e:
                     st.error(f"❌ Error loading sample data: {str(e)}")
@@ -120,58 +120,133 @@ def show_dashboard():
     
     st.header("📊 Dashboard Overview")
     
-    # Key Metrics Row
+    # Dynamic Key Metrics Row
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
             "Total Participants", 
             f"{metrics.get('total_participants', 0):,}",
-            help="Total number of participants in the study"
+            help="Total number of participants in the dataset"
         )
     
     with col2:
-        st.metric(
-            "Study Sites", 
-            f"{metrics.get('total_sites', 0):,}",
-            help="Number of clinical trial sites"
-        )
+        if 'total_sites' in metrics and metrics['total_sites'] > 1:
+            st.metric(
+                f"Study Sites", 
+                f"{metrics.get('total_sites', 0):,}",
+                help="Number of different sites/locations"
+            )
+        else:
+            st.metric(
+                "Data Columns", 
+                f"{metrics.get('total_columns', 0):,}",
+                help="Number of data columns in the dataset"
+            )
     
     with col3:
-        eligibility_rate = metrics.get('eligibility_rate', 0)
-        st.metric(
-            "Eligibility Rate", 
-            f"{eligibility_rate:.1f}%",
-            help="Percentage of screened participants who meet study criteria"
-        )
+        if 'eligibility_rate' in metrics:
+            eligibility_rate = metrics.get('eligibility_rate', 0)
+            st.metric(
+                "Eligibility Rate", 
+                f"{eligibility_rate:.1f}%",
+                help="Percentage of participants who meet criteria"
+            )
+        elif 'numeric_columns' in metrics:
+            st.metric(
+                "Numeric Columns", 
+                f"{metrics.get('numeric_columns', 0):,}",
+                help="Number of numeric data columns"
+            )
+        else:
+            missing_pct = metrics.get('missing_data_percent', 0)
+            st.metric(
+                "Data Completeness", 
+                f"{100-missing_pct:.1f}%",
+                help="Percentage of non-missing data"
+            )
     
     with col4:
-        high_risk_count = metrics.get('high_risk_count', 0)
-        st.metric(
-            "High Risk Participants", 
-            f"{high_risk_count:,}",
-            help="Number of participants with high dropout risk"
-        )
+        if 'high_risk_count' in metrics and metrics['high_risk_count'] > 0:
+            high_risk_count = metrics.get('high_risk_count', 0)
+            st.metric(
+                "High Risk Cases", 
+                f"{high_risk_count:,}",
+                help="Number of high-risk participants"
+            )
+        elif 'categorical_columns' in metrics:
+            st.metric(
+                "Categorical Columns", 
+                f"{metrics.get('categorical_columns', 0):,}",
+                help="Number of categorical data columns"
+            )
+        else:
+            st.metric(
+                "Duplicate Rows", 
+                f"{metrics.get('duplicate_rows', 0):,}",
+                help="Number of duplicate records found"
+            )
     
     st.markdown("---")
     
-    # Charts Row
-    col1, col2 = st.columns(2)
+    # Import dynamic chart functions
+    from utils.chart_utils import (get_available_charts, create_data_overview_chart, 
+                                  create_dynamic_numeric_chart, create_one_hot_analysis_chart, 
+                                  create_correlation_matrix_chart)
     
-    with col1:
-        st.subheader("📈 Eligibility Funnel")
-        funnel_chart = create_eligibility_funnel(df)
-        st.plotly_chart(funnel_chart, use_container_width=True)
+    # Dynamic Charts Section
+    st.subheader("📊 Dynamic Data Analysis")
     
-    with col2:
-        st.subheader("⚠️ Dropout Risk Distribution")
-        risk_chart = create_dropout_risk_chart(df)
-        st.plotly_chart(risk_chart, use_container_width=True)
+    # Get available chart types based on data
+    available_charts = get_available_charts(df)
     
-    # Site Distribution
-    st.subheader("🏢 Site Distribution")
-    site_chart = create_site_distribution(df)
-    st.plotly_chart(site_chart, use_container_width=True)
+    # Create chart layout based on available data
+    if len(available_charts) >= 2:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if 'eligibility_funnel' in available_charts:
+                st.subheader("📈 Participant Flow Analysis")
+                funnel_chart = create_eligibility_funnel(df)
+                st.plotly_chart(funnel_chart, use_container_width=True)
+            elif 'data_overview' in available_charts:
+                st.subheader("📊 Data Overview")
+                overview_chart = create_data_overview_chart(df)
+                st.plotly_chart(overview_chart, use_container_width=True)
+        
+        with col2:
+            if 'risk_distribution' in available_charts:
+                st.subheader("📊 Category Distribution")
+                risk_chart = create_dropout_risk_chart(df)
+                st.plotly_chart(risk_chart, use_container_width=True)
+            elif 'demographic_analysis' in available_charts:
+                st.subheader("📈 Numeric Data Analysis")
+                numeric_chart = create_dynamic_numeric_chart(df)
+                st.plotly_chart(numeric_chart, use_container_width=True)
+    
+    # Additional charts in full width
+    if 'site_distribution' in available_charts:
+        st.subheader("🏢 Location-Based Analysis")
+        site_chart = create_site_distribution(df)
+        st.plotly_chart(site_chart, use_container_width=True)
+    
+    # One-hot encoded features analysis
+    if 'one_hot_analysis' in available_charts:
+        st.subheader("🎯 Categorical Feature Analysis")
+        one_hot_chart = create_one_hot_analysis_chart(df)
+        st.plotly_chart(one_hot_chart, use_container_width=True)
+    
+    # Correlation analysis
+    if 'correlation_analysis' in available_charts:
+        st.subheader("🔗 Feature Correlation Analysis")
+        corr_chart = create_correlation_matrix_chart(df)
+        st.plotly_chart(corr_chart, use_container_width=True)
+    
+    # Show data overview if no other charts are available
+    if len(available_charts) < 2:
+        st.subheader("📊 Data Overview")
+        overview_chart = create_data_overview_chart(df)
+        st.plotly_chart(overview_chart, use_container_width=True)
     
     # AI Summaries
     st.subheader("🤖 AI-Powered Insights")
@@ -464,7 +539,7 @@ def show_upload_section():
                 st.session_state.data_uploaded = True
                 
                 st.success("Data processed successfully!")
-                st.rerun()
+                # Remove automatic rerun to prevent flickering
                 
         except Exception as e:
             st.error(f"Error processing file: {e}")

@@ -3,6 +3,17 @@ import numpy as np
 import streamlit as st
 from typing import Dict, Any, List, Tuple
 from config import DATA_VALIDATION, ERROR_MESSAGES
+try:
+    from fuzzywuzzy import fuzz
+except ImportError:
+    # Fallback if fuzzywuzzy is not available
+    def fuzz_ratio(a, b):
+        return 100 if a.lower() == b.lower() else 0
+    
+    class fuzz:
+        @staticmethod
+        def ratio(a, b):
+            return fuzz_ratio(a, b)
 
 def find_best_column_match(df: pd.DataFrame, target_names: List[str]) -> str:
     """
@@ -111,12 +122,14 @@ def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
             warnings.append("Duplicate participant IDs found and removed")
             cleaned_df = cleaned_df.drop_duplicates(subset=['participant_id'])
     
-    # Clean and validate age (flexible - don't remove rows)
-    if 'age' in cleaned_df.columns:
-        cleaned_df['age'] = pd.to_numeric(cleaned_df['age'], errors='coerce')
-        invalid_ages = cleaned_df['age'].isna().sum()
-        if invalid_ages > 0:
-            warnings.append(f"Found {invalid_ages} rows with invalid age data (kept as NaN)")
+    # Apply intelligent categorical conversion
+    cleaned_df, conversion_results, original_column_metadata, categorical_warnings = intelligent_categorical_converter(cleaned_df)
+    warnings.extend(categorical_warnings)
+    
+    # Store metadata in session state for frontend use
+    if hasattr(st, 'session_state'):
+        st.session_state.original_column_metadata = original_column_metadata
+        st.session_state.conversion_results = conversion_results
     
     # Clean meets_criteria column (flexible)
     if 'meets_criteria' in cleaned_df.columns:
@@ -172,6 +185,72 @@ def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     
     return cleaned_df, warnings
 
+def intelligent_categorical_converter(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict, Dict, List[str]]:
+    """
+    Apply intelligent categorical conversion to ALL columns while preserving original metadata
+    
+    Args:
+        df: Input DataFrame with categorical columns
+        
+    Returns:
+        Tuple of (processed_df, conversion_results, original_metadata, warnings)
+    """
+    warnings = []
+    processed_df = df.copy()
+    conversion_results = {}
+    original_column_metadata = {}
+    
+    for column in processed_df.columns:
+        if processed_df[column].dtype == 'object':  # Categorical column
+            # Store original data for frontend reference
+            original_column_metadata[column] = {
+                'original_values': processed_df[column].unique().tolist(),
+                'value_counts': processed_df[column].value_counts().to_dict(),
+                'column_type': 'categorical'
+            }
+            
+            conversion_result = convert_single_categorical_column(processed_df[column], column)
+            
+            if conversion_result['success']:
+                conversion_results[column] = conversion_result
+                
+                if conversion_result['conversion_method'] == 'one_hot_encoding':
+                    # For one-hot encoding, keep original column AND add encoded columns
+                    original_column_metadata[column]['one_hot_columns'] = list(conversion_result['one_hot_encoded'].columns)
+                    original_column_metadata[column]['encoding_method'] = 'one_hot_encoding'
+                    
+                    # Add one-hot columns with special prefix to identify them as encoded (optimized)
+                    one_hot_renamed = conversion_result['one_hot_encoded'].add_prefix('_encoded_')
+                    processed_df = pd.concat([processed_df, one_hot_renamed], axis=1)
+                    
+                    warnings.append(f"Created one-hot encoding for '{column}' (original column preserved)")
+                    
+                elif conversion_result['converted_series'] is not None:
+                    # Store original-to-encoded mapping
+                    if conversion_result['encoding_map']:
+                        original_column_metadata[column]['encoding_map'] = conversion_result['encoding_map']
+                        original_column_metadata[column]['reverse_map'] = {v: k for k, v in conversion_result['encoding_map'].items()}
+                    
+                    original_column_metadata[column]['encoding_method'] = conversion_result['conversion_method']
+                    
+                    # Create a parallel encoded column instead of replacing
+                    processed_df[f'_encoded_{column}'] = conversion_result['converted_series']
+                    
+                    # Add informative warning
+                    method = conversion_result['conversion_method']
+                    if method == 'age_mapping':
+                        warnings.append(f"Converted age categories in '{column}' to numeric (original column preserved)")
+                    elif method == 'ordinal_encoding':
+                        warnings.append(f"Converted ordinal categories in '{column}' (original column preserved)")
+                    elif method == 'binary_encoding':
+                        warnings.append(f"Converted binary categories in '{column}' (original column preserved)")
+                    elif method == 'label_encoding':
+                        warnings.append(f"Applied label encoding to '{column}' (original column preserved)")
+                    elif method == 'frequency_encoding':
+                        warnings.append(f"Applied frequency encoding to '{column}' (original column preserved)")
+    
+    return processed_df, conversion_results, original_column_metadata, warnings
+
 def standardize_boolean_column(series: pd.Series) -> pd.Series:
     """
     Standardize boolean-like values to True/False
@@ -224,92 +303,398 @@ def standardize_risk_column(series: pd.Series) -> pd.Series:
     
     return result
 
-def compute_metrics(df: pd.DataFrame) -> Dict[str, Any]:
+def convert_single_categorical_column(series: pd.Series, column_name: str = None) -> Dict[str, Any]:
     """
-    Compute key metrics from any clinical trial data
+    Intelligently convert categorical data to numeric using multiple techniques
     
     Args:
-        df: Cleaned dataframe
+        series: Series containing categorical data
+        column_name: Name of the column for context-aware processing
+        
+    Returns:
+        Dictionary with conversion results and metadata
+    """
+    column_name = column_name or 'unknown'
+    result = {
+        'original_series': series,
+        'converted_series': None,
+        'conversion_method': None,
+        'encoding_map': None,
+        'one_hot_encoded': None,
+        'success': False
+    }
+    
+    # If already numeric, return as-is
+    if series.dtype in ['int64', 'float64']:
+        result['converted_series'] = series
+        result['conversion_method'] = 'already_numeric'
+        result['success'] = True
+        return result
+    
+    # Determine the best conversion strategy based on column name and data
+    column_lower = column_name.lower()
+    unique_values = series.unique()
+    unique_count = len(unique_values)
+    
+    # Strategy 1: Age-specific conversion (integrated into ordinal conversion)
+    if any(keyword in column_lower for keyword in ['age', 'years', 'birth']):
+        # Use ordinal conversion with age-specific mappings
+        converted_series, encoding_map = convert_ordinal_categories(series, include_age_mappings=True)
+        if converted_series is not None:
+            result['converted_series'] = converted_series
+            result['conversion_method'] = 'age_mapping'
+            result['encoding_map'] = encoding_map
+            result['success'] = True
+            return result
+    
+    # Strategy 2: Ordinal/Level conversion (High/Medium/Low, etc.)
+    if any(keyword in column_lower for keyword in ['risk', 'level', 'grade', 'severity', 'priority']):
+        converted_series, encoding_map = convert_ordinal_categories(series)
+        if converted_series is not None:
+            result['converted_series'] = converted_series
+            result['conversion_method'] = 'ordinal_encoding'
+            result['encoding_map'] = encoding_map
+            result['success'] = True
+            return result
+    
+    # Strategy 3: Boolean conversion (Yes/No, True/False, etc.)
+    if unique_count <= 2 or any(keyword in column_lower for keyword in ['eligible', 'qualified', 'pass', 'fail', 'active']):
+        converted_series, encoding_map = convert_binary_categories(series)
+        if converted_series is not None:
+            result['converted_series'] = converted_series
+            result['conversion_method'] = 'binary_encoding'
+            result['encoding_map'] = encoding_map
+            result['success'] = True
+            return result
+    
+    # Strategy 4: One-Hot Encoding for nominal categories (when unique count is reasonable)
+    if 2 < unique_count <= 10:
+        one_hot_df = create_one_hot_encoding(series, column_name)
+        if one_hot_df is not None:
+            result['one_hot_encoded'] = one_hot_df
+            result['conversion_method'] = 'one_hot_encoding'
+            result['success'] = True
+            return result
+    
+    # Strategy 5: Label Encoding for high-cardinality categories
+    if unique_count > 10:
+        converted_series, encoding_map = create_label_encoding(series)
+        result['converted_series'] = converted_series
+        result['conversion_method'] = 'label_encoding'
+        result['encoding_map'] = encoding_map
+        result['success'] = True
+        return result
+    
+    # Strategy 6: Frequency Encoding as fallback
+    converted_series = create_frequency_encoding(series)
+    result['converted_series'] = converted_series
+    result['conversion_method'] = 'frequency_encoding'
+    result['success'] = True
+    return result
+
+# Old age function removed - now handled by comprehensive categorical converter
+
+def convert_ordinal_categories(series: pd.Series, include_age_mappings: bool = False) -> Tuple[pd.Series, Dict]:
+    """Convert ordinal categories like High/Medium/Low to numeric"""
+    ordinal_mappings = {
+        # Risk levels
+        'low': 1, 'minimal': 1, 'minor': 1,
+        'medium': 2, 'moderate': 2, 'average': 2, 'normal': 2,
+        'high': 3, 'severe': 3, 'major': 3, 'critical': 4, 'extreme': 5,
+        
+        # Performance levels
+        'poor': 1, 'bad': 1, 'weak': 1,
+        'fair': 2, 'adequate': 2, 'satisfactory': 2,
+        'good': 3, 'strong': 3, 'excellent': 4, 'outstanding': 5,
+        
+        # Priority levels
+        'lowest': 1, 'lower': 2, 'normal': 3, 'higher': 4, 'highest': 5,
+        
+        # Numeric-like ordinals
+        'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5,
+        '1st': 1, '2nd': 2, '3rd': 3, '4th': 4, '5th': 5
+    }
+    
+    # Add age-specific mappings if requested
+    if include_age_mappings:
+        age_mappings = {
+            'infant': 1, 'baby': 1, 'newborn': 0.5,
+            'toddler': 2, 'preschool': 4, 'child': 8, 'children': 8, 'pediatric': 8,
+            'school_age': 10, 'adolescent': 15, 'teen': 16, 'teenager': 16, 'youth': 18,
+            'young_adult': 25, 'adult': 35, 'middle_age': 45, 'middle_aged': 45,
+            'older_adult': 65, 'elderly': 72, 'senior': 70, 'geriatric': 78,
+            '0-18': 9, '18-30': 24, '30-50': 40, '50-70': 60, '70+': 75, '65+': 72,
+            'under_18': 12, 'over_65': 72, '18-65': 35
+        }
+        ordinal_mappings.update(age_mappings)
+    
+    converted = series.copy()
+    encoding_map = {}
+    changes_made = False
+    
+    for idx, value in series.items():
+        if pd.isna(value):
+            continue
+        str_val = str(value).lower().strip()
+        
+        if str_val in ordinal_mappings:
+            numeric_val = ordinal_mappings[str_val]
+            converted.iloc[idx] = numeric_val
+            encoding_map[value] = numeric_val
+            changes_made = True
+    
+    if changes_made:
+        return pd.to_numeric(converted, errors='coerce'), encoding_map
+    return None, None
+
+def convert_binary_categories(series: pd.Series) -> Tuple[pd.Series, Dict]:
+    """Convert binary categories to 0/1"""
+    true_values = ['yes', 'true', '1', 'pass', 'qualified', 'eligible', 'active', 'positive', 'success']
+    false_values = ['no', 'false', '0', 'fail', 'unqualified', 'ineligible', 'inactive', 'negative', 'failure']
+    
+    converted = series.copy()
+    encoding_map = {}
+    
+    for idx, value in series.items():
+        if pd.isna(value):
+            continue
+        str_val = str(value).lower().strip()
+        
+        if str_val in true_values:
+            converted.iloc[idx] = 1
+            encoding_map[value] = 1
+        elif str_val in false_values:
+            converted.iloc[idx] = 0
+            encoding_map[value] = 0
+    
+    if len(encoding_map) > 0:
+        return pd.to_numeric(converted, errors='coerce'), encoding_map
+    return None, None
+
+def create_one_hot_encoding(series: pd.Series, column_name: str) -> pd.DataFrame:
+    """Create one-hot encoded columns for nominal categories"""
+    try:
+        # Clean the series
+        clean_series = series.fillna('Missing').astype(str)
+        
+        # Create one-hot encoding
+        one_hot = pd.get_dummies(clean_series, prefix=column_name)
+        
+        # Convert to integer type (0/1)
+        one_hot = one_hot.astype(int)
+        
+        return one_hot
+    except Exception:
+        return None
+
+def create_label_encoding(series: pd.Series) -> Tuple[pd.Series, Dict]:
+    """Create label encoding for high-cardinality categories"""
+    unique_values = series.dropna().unique()
+    encoding_map = {val: idx for idx, val in enumerate(sorted(unique_values))}
+    
+    converted = series.map(encoding_map)
+    return converted, encoding_map
+
+def create_frequency_encoding(series: pd.Series) -> pd.Series:
+    """Create frequency-based encoding"""
+    frequency_map = series.value_counts().to_dict()
+    return series.map(frequency_map)
+
+def compute_metrics(df: pd.DataFrame) -> Dict[str, Any]:
+    """
+    Compute key metrics from any clinical trial data - completely flexible
+    
+    Args:
+        df: Input dataframe (any structure)
         
     Returns:
         Dictionary of computed metrics
     """
     metrics = {}
     
-    # Basic counts
+    # Basic counts - always available
     metrics['total_participants'] = len(df)
+    metrics['total_columns'] = len(df.columns)
     
-    # Auto-detect key columns
-    location_col = find_best_column_match(df, ['location', 'site', 'center', 'facility', 'clinic'])
-    metrics['total_sites'] = df[location_col].nunique() if location_col else 1
+    # Auto-detect key columns dynamically
+    location_cols = [col for col in df.columns if any(keyword in col.lower() 
+                    for keyword in ['location', 'site', 'center', 'facility', 'clinic', 'hospital'])]
+    if location_cols:
+        location_col = location_cols[0]
+        metrics['total_sites'] = df[location_col].nunique()
+        metrics['location_column'] = location_col
+    else:
+        metrics['total_sites'] = 1
     
-    # Eligibility metrics
-    if 'meets_criteria' in df.columns:
-        metrics['eligible_participants'] = df['meets_criteria'].sum()
-        metrics['eligibility_rate'] = (df['meets_criteria'].sum() / len(df)) * 100 if len(df) > 0 else 0
-        metrics['ineligible_participants'] = len(df) - df['meets_criteria'].sum()
-    
-    # Risk distribution
-    if 'dropout_risk' in df.columns:
-        risk_counts = df['dropout_risk'].value_counts()
-        metrics['high_risk_count'] = risk_counts.get('High', 0)
-        metrics['medium_risk_count'] = risk_counts.get('Medium', 0)
-        metrics['low_risk_count'] = risk_counts.get('Low', 0)
+    # Eligibility metrics - flexible detection
+    eligibility_cols = [col for col in df.columns if any(keyword in col.lower() 
+                       for keyword in ['eligible', 'criteria', 'qualified', 'pass', 'meets'])]
+    if eligibility_cols:
+        eligibility_col = eligibility_cols[0]
+        if df[eligibility_col].dtype == 'bool':
+            eligible_count = df[eligibility_col].sum()
+        else:
+            # Handle various eligibility formats
+            eligible_count = df[eligibility_col].astype(str).str.lower().isin(['yes', 'true', '1', 'pass', 'qualified']).sum()
         
-        total_risk = len(df[df['dropout_risk'].notna()])
+        metrics['eligible_participants'] = eligible_count
+        metrics['eligibility_rate'] = (eligible_count / len(df)) * 100 if len(df) > 0 else 0
+        metrics['ineligible_participants'] = len(df) - eligible_count
+        metrics['eligibility_column'] = eligibility_col
+    
+    # Risk distribution - flexible detection
+    risk_cols = [col for col in df.columns if any(keyword in col.lower() 
+                for keyword in ['risk', 'dropout', 'attrition', 'level'])]
+    if risk_cols:
+        risk_col = risk_cols[0]
+        risk_counts = df[risk_col].value_counts()
+        metrics['risk_distribution'] = risk_counts.to_dict()
+        metrics['risk_column'] = risk_col
+        
+        # Try to identify high/medium/low risk categories
+        high_risk_keywords = ['high', 'severe', 'critical', '3']
+        medium_risk_keywords = ['medium', 'moderate', '2']
+        low_risk_keywords = ['low', 'mild', '1']
+        
+        high_risk_count = 0
+        medium_risk_count = 0
+        low_risk_count = 0
+        
+        for category, count in risk_counts.items():
+            category_str = str(category).lower()
+            if any(keyword in category_str for keyword in high_risk_keywords):
+                high_risk_count += count
+            elif any(keyword in category_str for keyword in medium_risk_keywords):
+                medium_risk_count += count
+            elif any(keyword in category_str for keyword in low_risk_keywords):
+                low_risk_count += count
+        
+        metrics['high_risk_count'] = high_risk_count
+        metrics['medium_risk_count'] = medium_risk_count
+        metrics['low_risk_count'] = low_risk_count
+        
+        total_risk = len(df[df[risk_col].notna()])
         if total_risk > 0:
-            metrics['high_risk_percent'] = (metrics['high_risk_count'] / total_risk) * 100
-            metrics['medium_risk_percent'] = (metrics['medium_risk_count'] / total_risk) * 100
-            metrics['low_risk_percent'] = (metrics['low_risk_count'] / total_risk) * 100
+            metrics['high_risk_percent'] = (high_risk_count / total_risk) * 100
+            metrics['medium_risk_percent'] = (medium_risk_count / total_risk) * 100
+            metrics['low_risk_percent'] = (low_risk_count / total_risk) * 100
     
-    # Age statistics
-    if 'age' in df.columns and df['age'].notna().sum() > 0:
-        metrics['avg_age'] = df['age'].mean()
-        metrics['median_age'] = df['age'].median()
-        metrics['min_age'] = df['age'].min()
-        metrics['max_age'] = df['age'].max()
-        metrics['age_std'] = df['age'].std()
+    # Age/Numeric statistics - flexible detection with categorical age support
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    age_cols_numeric = [col for col in numeric_cols if 'age' in col.lower()]
+    age_cols_all = [col for col in df.columns if 'age' in col.lower()]
     
-    # Site performance
-    if 'location' in df.columns and 'meets_criteria' in df.columns:
-        site_stats = df.groupby('location').agg({
-            'participant_id': 'count',
-            'meets_criteria': ['sum', 'mean']
-        }).round(3)
+    # Handle numeric age columns
+    if age_cols_numeric:
+        age_col = age_cols_numeric[0]
+        age_data = df[age_col].dropna()
+        if len(age_data) > 0:
+            metrics['avg_age'] = age_data.mean()
+            metrics['median_age'] = age_data.median()
+            metrics['min_age'] = age_data.min()
+            metrics['max_age'] = age_data.max()
+            metrics['age_std'] = age_data.std()
+            metrics['age_column'] = age_col
+    # Handle converted categorical age columns or one-hot encoded age columns
+    elif age_cols_all:
+        age_col = age_cols_all[0]
+        try:
+            # Check if it's now numeric after conversion
+            if pd.api.types.is_numeric_dtype(df[age_col]):
+                age_data = df[age_col].dropna()
+                if len(age_data) > 0:
+                    metrics['avg_age'] = age_data.mean()
+                    metrics['median_age'] = age_data.median()
+                    metrics['min_age'] = age_data.min()
+                    metrics['max_age'] = age_data.max()
+                    metrics['age_std'] = age_data.std()
+                    metrics['age_column'] = age_col
+                    metrics['age_was_converted'] = True
+            else:
+                # Still categorical, record distribution
+                age_counts = df[age_col].value_counts()
+                metrics['age_categories'] = age_counts.to_dict()
+                metrics['age_column'] = age_col
+        except Exception:
+            # Fallback for any issues
+            pass
+    
+    # General numeric statistics for any numeric columns
+    metrics['numeric_columns'] = len(numeric_cols)
+    if len(numeric_cols) > 0:
+        metrics['numeric_summary'] = {}
+        for col in numeric_cols[:3]:  # Limit to first 3 numeric columns to avoid overwhelming
+            col_data = df[col].dropna()
+            if len(col_data) > 0:
+                metrics['numeric_summary'][col] = {
+                    'mean': col_data.mean(),
+                    'median': col_data.median(),
+                    'std': col_data.std()
+                }
+    
+    # Location-based performance - flexible detection
+    if location_cols and eligibility_cols:
+        location_col = location_cols[0]
+        eligibility_col = eligibility_cols[0]
         
-        site_stats.columns = ['total_participants', 'eligible_participants', 'eligibility_rate']
-        site_stats['eligibility_rate'] *= 100
+        # Get participant ID column
+        id_cols = [col for col in df.columns if any(keyword in col.lower() 
+                  for keyword in ['id', 'participant', 'subject', 'patient'])]
+        id_col = id_cols[0] if id_cols else df.columns[0]
         
-        metrics['site_performance'] = site_stats.to_dict('index')
-        
-        # Best performing sites
-        if len(site_stats) > 0:
-            best_site = site_stats['eligibility_rate'].idxmax()
-            metrics['best_performing_site'] = best_site
-            metrics['best_site_rate'] = site_stats.loc[best_site, 'eligibility_rate']
+        try:
+            site_stats = df.groupby(location_col).agg({
+                id_col: 'count'
+            }).rename(columns={id_col: 'total_participants'})
+            
+            # Add eligibility stats if available
+            if df[eligibility_col].dtype == 'bool':
+                site_stats['eligible_participants'] = df.groupby(location_col)[eligibility_col].sum()
+            else:
+                eligible_mask = df[eligibility_col].astype(str).str.lower().isin(['yes', 'true', '1', 'pass', 'qualified'])
+                site_stats['eligible_participants'] = df[eligible_mask].groupby(location_col).size().reindex(site_stats.index, fill_value=0)
+            
+            site_stats['eligibility_rate'] = (site_stats['eligible_participants'] / site_stats['total_participants']) * 100
+            site_stats = site_stats.round(3)
+            
+            metrics['site_performance'] = site_stats.to_dict('index')
+            
+            # Best performing site
+            if len(site_stats) > 0:
+                best_site = site_stats['eligibility_rate'].idxmax()
+                metrics['best_performing_site'] = best_site
+                metrics['best_site_rate'] = site_stats.loc[best_site, 'eligibility_rate']
+        except:
+            pass  # Skip if grouping fails
     
-    # Demographics
-    if 'gender' in df.columns:
-        gender_counts = df['gender'].value_counts()
-        metrics['gender_distribution'] = gender_counts.to_dict()
+    # Categorical data analysis - flexible for any categorical columns
+    categorical_cols = df.select_dtypes(include=['object']).columns
+    metrics['categorical_columns'] = len(categorical_cols)
     
-    if 'bmi' in df.columns and df['bmi'].notna().sum() > 0:
-        metrics['avg_bmi'] = df['bmi'].mean()
-        metrics['bmi_categories'] = pd.cut(df['bmi'], 
-                                         bins=[0, 18.5, 25, 30, 100], 
-                                         labels=['Underweight', 'Normal', 'Overweight', 'Obese']).value_counts().to_dict()
+    # Analyze top categorical distributions
+    metrics['categorical_distributions'] = {}
+    for col in categorical_cols[:5]:  # Limit to first 5 categorical columns
+        if df[col].nunique() <= 20:  # Only analyze columns with reasonable number of categories
+            col_counts = df[col].value_counts()
+            metrics['categorical_distributions'][col] = col_counts.head(5).to_dict()
     
-    # Protocol deviations
-    if 'protocol_deviation' in df.columns:
-        metrics['protocol_deviations'] = df['protocol_deviation'].sum()
-        metrics['deviation_rate'] = (df['protocol_deviation'].sum() / len(df)) * 100 if len(df) > 0 else 0
+    # Data quality metrics
+    metrics['missing_data_percent'] = (df.isnull().sum().sum() / (len(df) * len(df.columns))) * 100
+    metrics['duplicate_rows'] = df.duplicated().sum()
     
-    # Follow-up status
-    if 'followup_status' in df.columns:
-        followup_counts = df['followup_status'].value_counts()
-        metrics['followup_distribution'] = followup_counts.to_dict()
-        metrics['active_participants'] = followup_counts.get('Active', 0)
-        metrics['withdrawn_participants'] = followup_counts.get('Withdrawn', 0)
+    # Date columns analysis
+    date_cols = df.select_dtypes(include=['datetime64']).columns
+    metrics['date_columns'] = len(date_cols)
+    
+    if len(date_cols) > 0:
+        date_col = date_cols[0]
+        date_data = df[date_col].dropna()
+        if len(date_data) > 0:
+            metrics['date_range'] = {
+                'earliest': date_data.min(),
+                'latest': date_data.max(),
+                'span_days': (date_data.max() - date_data.min()).days
+            }
     
     return metrics
 
@@ -354,7 +739,7 @@ def get_data_summary(df: pd.DataFrame) -> str:
 
 def filter_data(df: pd.DataFrame, filters: Dict[str, Any]) -> pd.DataFrame:
     """
-    Apply filters to the dataframe
+    Apply filters to the dataframe - handles both numeric and categorical data
     
     Args:
         df: Dataframe to filter
@@ -366,15 +751,23 @@ def filter_data(df: pd.DataFrame, filters: Dict[str, Any]) -> pd.DataFrame:
     filtered_df = df.copy()
     
     for column, value in filters.items():
-        if column in filtered_df.columns and value is not None:
+        # Handle special age categories filter
+        if column == 'age_categories' and 'age' in filtered_df.columns:
+            filtered_df = filtered_df[filtered_df['age'].isin(value)]
+        elif column in filtered_df.columns and value is not None:
             if isinstance(value, list):
                 filtered_df = filtered_df[filtered_df[column].isin(value)]
             elif isinstance(value, tuple) and len(value) == 2:
-                # Range filter
-                filtered_df = filtered_df[
-                    (filtered_df[column] >= value[0]) & 
-                    (filtered_df[column] <= value[1])
-                ]
+                # Range filter - handle both numeric and string ranges
+                try:
+                    # For numeric ranges
+                    filtered_df = filtered_df[
+                        (pd.to_numeric(filtered_df[column], errors='coerce') >= value[0]) & 
+                        (pd.to_numeric(filtered_df[column], errors='coerce') <= value[1])
+                    ]
+                except:
+                    # If numeric conversion fails, treat as categorical
+                    filtered_df = filtered_df[filtered_df[column].isin(value)]
             else:
                 filtered_df = filtered_df[filtered_df[column] == value]
     

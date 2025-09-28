@@ -5,6 +5,20 @@ import plotly.express as px
 from utils.chart_utils import create_custom_chart, create_correlation_heatmap
 from utils.data_utils import filter_data
 
+def get_original_columns(df):
+    """Get only original columns, filtering out encoded columns"""
+    return [col for col in df.columns if not col.startswith('_encoded_')]
+
+def get_original_numeric_columns(df):
+    """Get only original numeric columns"""
+    original_cols = get_original_columns(df)
+    return df[original_cols].select_dtypes(include=['number']).columns.tolist()
+
+def get_original_categorical_columns(df):
+    """Get only original categorical columns"""
+    original_cols = get_original_columns(df)
+    return df[original_cols].select_dtypes(include=['object', 'category']).columns.tolist()
+
 # Page configuration
 st.set_page_config(
     page_title="Custom Charts - Clinical Trial Analytics",
@@ -41,10 +55,10 @@ def main():
         
         st.markdown("---")
         
-        # Column selection based on chart type
-        numeric_columns = df.select_dtypes(include=['number']).columns.tolist()
-        categorical_columns = df.select_dtypes(include=['object', 'category']).columns.tolist()
-        all_columns = df.columns.tolist()
+        # Column selection based on chart type - only show original columns
+        numeric_columns = get_original_numeric_columns(df)
+        categorical_columns = get_original_categorical_columns(df)
+        all_columns = get_original_columns(df)
         
         if chart_type == "Correlation Heatmap":
             st.info("Correlation heatmap will use all numeric columns automatically.")
@@ -128,16 +142,37 @@ def main():
         
         filters = {}
         
-        # Age filter
+        # Age filter - handle both numeric and categorical age data
         if 'age' in df.columns:
-            age_range = st.slider(
-                "Age Range",
-                min_value=int(df['age'].min()),
-                max_value=int(df['age'].max()),
-                value=(int(df['age'].min()), int(df['age'].max()))
-            )
-            if age_range != (int(df['age'].min()), int(df['age'].max())):
-                filters['age'] = age_range
+            try:
+                # Try to get numeric age values
+                age_numeric = pd.to_numeric(df['age'], errors='coerce').dropna()
+                
+                if len(age_numeric) > 0:
+                    min_age = int(age_numeric.min())
+                    max_age = int(age_numeric.max())
+                    
+                    age_range = st.slider(
+                        "Age Range",
+                        min_value=min_age,
+                        max_value=max_age,
+                        value=(min_age, max_age)
+                    )
+                    if age_range != (min_age, max_age):
+                        filters['age'] = age_range
+                else:
+                    # Handle categorical age data
+                    age_categories = df['age'].unique().tolist()
+                    selected_ages = st.multiselect(
+                        "Age Categories",
+                        age_categories,
+                        default=age_categories,
+                        help="Select age categories to include"
+                    )
+                    if len(selected_ages) != len(age_categories):
+                        filters['age_categories'] = selected_ages
+            except Exception as e:
+                st.info("Age filtering not available due to data format")
         
         # Site filter
         if 'location' in df.columns:
