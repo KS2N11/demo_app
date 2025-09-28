@@ -2,49 +2,37 @@ import openai
 import streamlit as st
 from typing import Dict, Any, Optional
 from config import (
-    AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_API_VERSION, 
-    AZURE_OPENAI_DEPLOYMENT_NAME, OPENAI_API_KEY, OPENAI_MODEL,
+    OPENAI_API_KEY, OPENAI_MODEL,
     EXECUTIVE_SUMMARY_PROMPT, CLINICAL_SUMMARY_PROMPT, MARKETING_SUMMARY_PROMPT,
     INSIGHT_GENERATION_PROMPT, TEMPLATE_RESPONSES, ERROR_MESSAGES
 )
 
 def setup_openai_client():
     """
-    Set up OpenAI client with Azure or OpenAI configuration
+    Set up OpenAI client
     
     Returns:
         Configured OpenAI client or None if configuration is missing
     """
     try:
-        # Try Azure OpenAI first
-        if AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY:
-            client = openai.AzureOpenAI(
-                azure_endpoint=AZURE_OPENAI_ENDPOINT,
-                api_key=AZURE_OPENAI_API_KEY,
-                api_version=AZURE_OPENAI_API_VERSION
-            )
-            return client, "azure"
-        
-        # Fall back to OpenAI
-        elif OPENAI_API_KEY:
+        if OPENAI_API_KEY:
             client = openai.OpenAI(api_key=OPENAI_API_KEY)
             return client, "openai"
-        
         else:
-            st.warning("⚠️ No AI API configuration found. AI features will use template responses.")
+            st.warning("⚠️ No OpenAI API key found. AI features will use template responses.")
             return None, None
             
     except Exception as e:
-        st.warning(f"⚠️ Error setting up AI client: {str(e)}. Using template responses.")
+        st.warning(f"⚠️ Error setting up OpenAI client: {str(e)}. Using template responses.")
         return None, None
 
 def call_llm(client, client_type: str, messages: list, max_tokens: int = 1000) -> Optional[str]:
     """
-    Make a call to the Language Model
+    Make a call to the OpenAI Language Model
     
     Args:
         client: OpenAI client instance
-        client_type: "azure" or "openai"
+        client_type: "openai"
         messages: List of message dictionaries
         max_tokens: Maximum tokens in response
         
@@ -52,14 +40,7 @@ def call_llm(client, client_type: str, messages: list, max_tokens: int = 1000) -
         Generated text or None if error
     """
     try:
-        if client_type == "azure":
-            response = client.chat.completions.create(
-                model=AZURE_OPENAI_DEPLOYMENT_NAME,
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=0.7
-            )
-        elif client_type == "openai":
+        if client_type == "openai":
             response = client.chat.completions.create(
                 model=OPENAI_MODEL,
                 messages=messages,

@@ -100,20 +100,12 @@ python setup.py
 
 ### API Setup
 
-The application supports both Azure OpenAI and OpenAI APIs:
+The application uses OpenAI API for AI-powered features:
 
-#### Azure OpenAI (Recommended)
-```env
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_KEY=your_api_key_here
-AZURE_OPENAI_API_VERSION=2023-05-15
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-35-turbo
-```
-
-#### OpenAI (Alternative)
+#### OpenAI Configuration
 ```env
 OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 ### Environment Setup
@@ -237,7 +229,7 @@ Choose from three tailored reports:
            ▼                    ▼
 ┌──────────────────┐  ┌──────────────────┐
 │  Data Processing │  │   AI Services    │
-│  (Pandas)        │  │  (OpenAI/Azure)  │
+│  (Pandas)        │  │   (OpenAI)       │
 └──────────────────┘  └──────────────────┘
            │                    │
            ▼                    ▼

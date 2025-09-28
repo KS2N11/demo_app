@@ -29,9 +29,9 @@ The Clinical Trial Analytics Demo is built as a multi-layered web application us
 ┌─────────────────────────────────────────────────────────────┐
 │                   SERVICE INTEGRATION LAYER                 │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Azure      │  │   OpenAI    │  │     Chart           │  │
-│  │  OpenAI     │  │    API      │  │   Generation        │  │
-│  │   Service   │  │             │  │    Service          │  │
+│  │   OpenAI    │  │    API      │  │     Chart           │  │
+│  │   Service   │  │   Client    │  │   Generation        │  │
+│  │             │  │             │  │    Service          │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                                │
@@ -137,7 +137,7 @@ generate_custom_insight() # Query-specific insights
 ```
 
 **AI Integration Flow**:
-1. **Client Setup**: Initialize Azure OpenAI or OpenAI client
+1. **Client Setup**: Initialize OpenAI client
 2. **Context Preparation**: Format data for LLM consumption
 3. **Prompt Engineering**: Create targeted prompts for different use cases
 4. **API Calls**: Execute LLM requests with error handling
@@ -218,7 +218,7 @@ graph TD
 
 ```python
 # Provider Priority
-1. Azure OpenAI (Primary)
+1. OpenAI API
 2. OpenAI API (Fallback)
 3. Template-based (No API)
 ```

@@ -319,25 +319,22 @@ def show_settings():
     st.subheader("🤖 AI Configuration")
     
     # AI service status
-    col1, col2 = st.columns(2)
+    st.markdown("**OpenAI Configuration:**")
+    openai_configured = bool(os.getenv("OPENAI_API_KEY"))
     
-    with col1:
-        st.markdown("**Azure OpenAI:**")
-        azure_configured = bool(os.getenv("AZURE_OPENAI_ENDPOINT") and os.getenv("AZURE_OPENAI_API_KEY"))
-        st.write("✅ Configured" if azure_configured else "❌ Not configured")
-    
-    with col2:
-        st.markdown("**OpenAI:**")
-        openai_configured = bool(os.getenv("OPENAI_API_KEY"))
-        st.write("✅ Configured" if openai_configured else "❌ Not configured")
-    
-    if not azure_configured and not openai_configured:
+    if openai_configured:
+        st.success("✅ OpenAI API configured")
+        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        st.info(f"📋 Model: {model}")
+    else:
+        st.error("❌ OpenAI API not configured")
         st.warning("""
-        ⚠️ **No AI services configured.** 
+        ⚠️ **No OpenAI API key found.** 
         
-        To enable AI features, set environment variables:
-        - For Azure OpenAI: `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`
-        - For OpenAI: `OPENAI_API_KEY`
+        To enable AI features:
+        1. Add your OpenAI API key to the .env file: `OPENAI_API_KEY=your_key_here`
+        2. Optionally set the model: `OPENAI_MODEL=gpt-4o-mini`
+        3. Restart the application
         """)
     
     st.markdown("---")
@@ -391,7 +388,7 @@ def show_settings():
                 st.session_state.data_uploaded = True
                 st.session_state.metrics = compute_metrics(sample_data)
                 st.success("Sample data loaded!")
-                st.experimental_rerun()
+                st.rerun()
     
     # Main content
     if not st.session_state.data_uploaded:
@@ -405,12 +402,14 @@ def load_sample_data():
         sample_path = "data/participants_sample.csv"
         if os.path.exists(sample_path):
             df = pd.read_csv(sample_path)
-            return clean_and_validate_data(df)
+            cleaned_df, warnings = clean_and_validate_data(df)
+            return cleaned_df
         else:
             # Generate sample data if file doesn't exist
             from data.generate_data import generate_synthetic_data
             df = generate_synthetic_data(200)
-            return clean_and_validate_data(df)
+            cleaned_df, warnings = clean_and_validate_data(df)
+            return cleaned_df
     except Exception as e:
         st.error(f"Error loading sample data: {e}")
         return None
@@ -449,8 +448,14 @@ def show_upload_section():
             st.dataframe(df.head(10))
             
             # Process data
-            with st.spinner("Processing data..."):
-                processed_df = clean_and_validate_data(df)
+            with st.spinner("Processing data.."):
+                processed_df, warnings = clean_and_validate_data(df)
+                
+                # Show warnings if any
+                if warnings:
+                    for warning in warnings:
+                        st.warning(f"⚠️ {warning}")
+                
                 metrics = compute_metrics(processed_df)
                 
                 # Store in session state
@@ -459,7 +464,7 @@ def show_upload_section():
                 st.session_state.data_uploaded = True
                 
                 st.success("Data processed successfully!")
-                st.experimental_rerun()
+                st.rerun()
                 
         except Exception as e:
             st.error(f"Error processing file: {e}")

@@ -135,7 +135,7 @@ def print_next_steps():
     
     print("\n📋 Next Steps:")
     print("1. 🔑 Configure API Keys:")
-    print("   • Edit .env file with your OpenAI or Azure OpenAI credentials")
+    print("   • Edit .env file with your OpenAI API credentials")
     print("   • See .env.template for required variables")
     
     print("\n2. 🏃‍♂️ Run the Application:")

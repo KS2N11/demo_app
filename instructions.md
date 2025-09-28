@@ -82,12 +82,12 @@ Sample Queries It Can Handle
 
 UI Layer: Streamlit frontend with upload, dashboard, and Q&A sections
 Logic Layer: Data processing, query parsing, session management
-Service Layer: AI integration (Azure OpenAI/OpenAI), chart generation
+Service Layer: AI integration (OpenAI), chart generation
 Data Layer: CSV files, session state, synthetic data generation
 
 AI Integration
 
-Supports both Azure OpenAI and OpenAI APIs
+Supports OpenAI API for AI-powered features
 Intelligent prompt engineering for different audiences
 Natural language query understanding
 Fallback to template-based responses

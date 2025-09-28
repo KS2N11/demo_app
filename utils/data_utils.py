@@ -4,9 +4,89 @@ import streamlit as st
 from typing import Dict, Any, List, Tuple
 from config import DATA_VALIDATION, ERROR_MESSAGES
 
+def find_best_column_match(df: pd.DataFrame, target_names: List[str]) -> str:
+    """
+    Find the best matching column name from a list of possibilities
+    
+    Args:
+        df: DataFrame to search in
+        target_names: List of possible column names to match
+        
+    Returns:
+        Best matching column name or None if no match found
+    """
+    df_columns_lower = [col.lower().strip() for col in df.columns]
+    
+    for target in target_names:
+        target_lower = target.lower().strip()
+        # Exact match
+        if target_lower in df_columns_lower:
+            return df.columns[df_columns_lower.index(target_lower)]
+        
+        # Partial match
+        for i, col in enumerate(df_columns_lower):
+            if target_lower in col or col in target_lower:
+                return df.columns[i]
+    
+    return None
+
+def auto_detect_and_standardize_columns(df: pd.DataFrame, warnings: List[str]) -> pd.DataFrame:
+    """
+    Auto-detect clinical trial columns and standardize names
+    
+    Args:
+        df: Input dataframe
+        warnings: List to append warnings to
+        
+    Returns:
+        DataFrame with standardized column names
+    """
+    cleaned_df = df.copy()
+    
+    # Column mapping patterns
+    column_mappings = {
+        'participant_id': ['id', 'participant_id', 'patient_id', 'subject_id', 'participant', 'patient', 'subject'],
+        'age': ['age', 'patient_age', 'participant_age', 'years', 'age_years'],
+        'gender': ['gender', 'sex', 'male_female', 'gender_mf'],
+        'location': ['location', 'site', 'center', 'facility', 'clinic', 'hospital', 'site_name'],
+        'meets_criteria': ['eligible', 'eligibility', 'meets_criteria', 'qualified', 'included', 'enrollment_status'],
+        'dropout_risk': ['risk', 'dropout_risk', 'risk_level', 'dropout', 'retention_risk'],
+        'enrollment_date': ['date', 'enrollment_date', 'enroll_date', 'start_date', 'entry_date'],
+        'bmi': ['bmi', 'body_mass_index', 'weight_height_ratio'],
+        'ethnicity': ['ethnicity', 'race', 'ethnic_group'],
+        'protocol_deviation': ['deviation', 'protocol_deviation', 'protocol_violation', 'non_compliance'],
+        'followup_status': ['status', 'followup_status', 'follow_up', 'current_status', 'participant_status']
+    }
+    
+    # Try to map columns automatically
+    detected_mappings = {}
+    for standard_name, possible_names in column_mappings.items():
+        matched_col = find_best_column_match(cleaned_df, possible_names)
+        if matched_col:
+            detected_mappings[matched_col] = standard_name
+    
+    # Rename detected columns
+    if detected_mappings:
+        cleaned_df = cleaned_df.rename(columns=detected_mappings)
+        warnings.append(f"Auto-detected columns: {', '.join([f'{k}→{v}' for k, v in detected_mappings.items()])}")
+    
+    # If no participant ID found, create one
+    if 'participant_id' not in cleaned_df.columns:
+        cleaned_df['participant_id'] = [f'P{i+1:04d}' for i in range(len(cleaned_df))]
+        warnings.append("Created participant IDs automatically")
+    
+    # Basic data cleaning for any format
+    for col in cleaned_df.columns:
+        if cleaned_df[col].dtype == 'object':
+            # Clean string columns
+            cleaned_df[col] = cleaned_df[col].astype(str).str.strip()
+            cleaned_df[col] = cleaned_df[col].replace(['nan', 'NaN', 'null', 'NULL', ''], np.nan)
+    
+    return cleaned_df
+
 def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     """
-    Clean and validate uploaded data
+    Flexibly clean and process any clinical trial CSV data
     
     Args:
         df: Raw dataframe from uploaded CSV
@@ -17,14 +97,12 @@ def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     warnings = []
     cleaned_df = df.copy()
     
-    # Check required columns
-    required_cols = DATA_VALIDATION['required_columns']
-    missing_cols = [col for col in required_cols if col not in cleaned_df.columns]
+    # Basic data cleaning - handle any CSV format
+    if len(cleaned_df) == 0:
+        raise ValueError("The uploaded file is empty or has no valid data rows.")
     
-    if missing_cols:
-        error_msg = ERROR_MESSAGES['missing_columns'].format(columns=', '.join(missing_cols))
-        st.error(error_msg)
-        raise ValueError(error_msg)
+    # Auto-detect and standardize column names
+    cleaned_df = auto_detect_and_standardize_columns(cleaned_df, warnings)
     
     # Clean participant_id
     if 'participant_id' in cleaned_df.columns:
@@ -33,20 +111,14 @@ def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
             warnings.append("Duplicate participant IDs found and removed")
             cleaned_df = cleaned_df.drop_duplicates(subset=['participant_id'])
     
-    # Clean and validate age
+    # Clean and validate age (flexible - don't remove rows)
     if 'age' in cleaned_df.columns:
-        # Convert to numeric, replacing non-numeric values with NaN
         cleaned_df['age'] = pd.to_numeric(cleaned_df['age'], errors='coerce')
-        
-        # Remove rows with invalid ages
-        age_min, age_max = DATA_VALIDATION['age_range']
-        invalid_ages = (cleaned_df['age'] < age_min) | (cleaned_df['age'] > age_max) | cleaned_df['age'].isna()
-        
-        if invalid_ages.sum() > 0:
-            warnings.append(f"Removed {invalid_ages.sum()} rows with invalid ages")
-            cleaned_df = cleaned_df[~invalid_ages]
+        invalid_ages = cleaned_df['age'].isna().sum()
+        if invalid_ages > 0:
+            warnings.append(f"Found {invalid_ages} rows with invalid age data (kept as NaN)")
     
-    # Clean meets_criteria column
+    # Clean meets_criteria column (flexible)
     if 'meets_criteria' in cleaned_df.columns:
         cleaned_df['meets_criteria'] = standardize_boolean_column(cleaned_df['meets_criteria'])
         
@@ -79,14 +151,21 @@ def clean_and_validate_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
     if 'protocol_deviation' in cleaned_df.columns:
         cleaned_df['protocol_deviation'] = standardize_boolean_column(cleaned_df['protocol_deviation'])
     
-    # Remove rows with too many missing required values
-    required_cols_present = cleaned_df[required_cols].notna().sum(axis=1)
-    min_required = len(required_cols) - 1  # Allow 1 missing required field
-    insufficient_data = required_cols_present < min_required
+    # Flexible validation: Only require some kind of identifier
+    if 'participant_id' not in cleaned_df.columns:
+        cleaned_df['participant_id'] = [f'P{i:04d}' for i in range(len(cleaned_df))]
+        warnings.append("Added participant IDs as data didn't contain identifiers")
     
-    if insufficient_data.sum() > 0:
-        warnings.append(f"Removed {insufficient_data.sum()} rows with insufficient required data")
-        cleaned_df = cleaned_df[~insufficient_data]
+    # Ensure we have some data
+    if len(cleaned_df) == 0:
+        warnings.append("No valid data rows found after cleaning")
+        # Create a minimal placeholder dataset
+        cleaned_df = pd.DataFrame({
+            'participant_id': ['PLACEHOLDER_001'],
+            'age': [30],
+            'meets_criteria': [True]
+        })
+        warnings.append("Created placeholder data for demonstration")
     
     # Reset index
     cleaned_df = cleaned_df.reset_index(drop=True)
@@ -147,7 +226,7 @@ def standardize_risk_column(series: pd.Series) -> pd.Series:
 
 def compute_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     """
-    Compute key metrics from the cleaned data
+    Compute key metrics from any clinical trial data
     
     Args:
         df: Cleaned dataframe
@@ -159,7 +238,10 @@ def compute_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     
     # Basic counts
     metrics['total_participants'] = len(df)
-    metrics['total_sites'] = df['location'].nunique() if 'location' in df.columns else 0
+    
+    # Auto-detect key columns
+    location_col = find_best_column_match(df, ['location', 'site', 'center', 'facility', 'clinic'])
+    metrics['total_sites'] = df[location_col].nunique() if location_col else 1
     
     # Eligibility metrics
     if 'meets_criteria' in df.columns:

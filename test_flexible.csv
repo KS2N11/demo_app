@@ -1,0 +1,6 @@
+PatientID,Years_Old,Gender,Study_Site,Eligible,Risk_Level
+001,45,Male,Hospital A,Yes,Low
+002,32,Female,Hospital B,No,Medium
+003,67,Male,Clinic C,Yes,High
+004,29,Female,Hospital A,Yes,Low
+005,55,Male,Hospital B,No,Medium
