@@ -1,0 +1,293 @@
+/* Clinical Trial Analytics Demo - Custom CSS */
+
+/* Main app styling */
+.main-header {
+    padding: 1rem 0;
+    border-bottom: 3px solid #1f77b4;
+    margin-bottom: 2rem;
+}
+
+/* Metric cards styling */
+.metric-card {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #1f77b4;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Status indicators */
+.status-success {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-warning {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.status-danger {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Chart containers */
+.chart-container {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+/* AI insights styling */
+.ai-insight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.ai-insight h3 {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+/* Data quality indicators */
+.quality-excellent {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.quality-good {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.quality-fair {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.quality-poor {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+/* Sidebar styling */
+.sidebar-section {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.sidebar-metric {
+    background-color: #f1f3f4;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+}
+
+/* Button styling */
+.stButton > button {
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Tab styling */
+.stTabs > div > div > div > div {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+/* File uploader styling */
+.uploadedFileName {
+    color: #28a745;
+    font-weight: 500;
+}
+
+/* Data table styling */
+.dataframe {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dataframe thead th {
+    background-color: #f1f3f4;
+    font-weight: 600;
+    color: #343a40;
+}
+
+/* Alert styling */
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+}
+
+/* Loading spinner customization */
+.stSpinner {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+/* Custom metric styling */
+.metric-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin: 0.5rem 0;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0.5rem 0;
+}
+
+.metric-label {
+    font-size: 1rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Chat history styling */
+.chat-message {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.chat-query {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.chat-response {
+    color: #6c757d;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .metric-container {
+        padding: 1rem;
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        padding: 0.5rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .metric-card {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .chart-container {
+        background-color: #495057;
+    }
+    
+    .dataframe {
+        border-color: #6c757d;
+    }
+    
+    .dataframe thead th {
+        background-color: #495057;
+        color: #f8f9fa;
+    }
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

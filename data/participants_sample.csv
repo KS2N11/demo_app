@@ -1,0 +1,201 @@
+participant_id,age,gender,location,ethnicity,bmi,enrollment_date,meets_criteria,dropout_risk,protocol_deviation,followup_status,days_since_enrollment,age_group,bmi_category
+P0001,62,Female,Site F - Philadelphia,White,25.4,2025-04-29,True,Medium,True,Lost to Follow-up,152,61-75,Overweight
+P0002,66,Female,Site B - Los Angeles,White,23.7,2025-04-07,True,Low,False,Active,174,61-75,Normal
+P0003,39,Male,Site C - Chicago,White,27.3,2025-06-10,False,Low,False,Active,110,31-45,Overweight
+P0004,33,Female,Site B - Los Angeles,White,23.6,2025-06-02,True,Low,False,Active,118,31-45,Normal
+P0005,54,Male,Site I - Dallas,White,21.8,2025-05-28,True,Medium,False,Active,123,46-60,Normal
+P0006,25,Female,Site H - San Diego,Asian,26.9,2025-05-06,False,Low,False,Active,145,18-30,Overweight
+P0007,53,Male,Site C - Chicago,Hispanic or Latino,24.8,2025-04-27,True,Low,False,Active,154,46-60,Normal
+P0008,28,Male,Site J - San Jose,Hispanic or Latino,28.3,2025-08-18,True,Low,False,Active,41,18-30,Overweight
+P0009,42,Female,Site F - Philadelphia,White,24.8,2025-04-23,True,Low,False,Active,158,31-45,Normal
+P0010,37,Female,Site D - Houston,White,29.9,2025-07-18,True,Low,False,Active,72,31-45,Overweight
+P0011,18,Male,Site A - New York,White,29.3,2025-04-09,False,Low,False,Active,172,18-30,Overweight
+P0012,25,Male,Site H - San Diego,White,25.2,2025-04-08,True,Low,False,Active,173,18-30,Overweight
+P0013,68,Female,Site B - Los Angeles,Hispanic or Latino,27.3,2025-04-24,True,Low,False,Active,157,61-75,Overweight
+P0014,50,Female,Site I - Dallas,White,16.0,2025-05-26,True,Medium,False,Active,125,46-60,Underweight
+P0015,52,Female,Site G - San Antonio,White,27.6,2025-05-30,False,Low,False,Active,121,46-60,Overweight
+P0016,54,Female,Site E - Phoenix,White,27.9,2025-08-08,True,Low,False,Active,51,46-60,Overweight
+P0017,72,Male,Site G - San Antonio,White,29.0,2025-04-07,True,Medium,False,Withdrawn,174,61-75,Overweight
+P0018,85,Male,Site B - Los Angeles,White,32.8,2025-08-22,True,High,False,Active,37,75+,Obese
+P0019,39,Female,Site D - Houston,Asian,27.9,2025-05-21,True,Low,False,Active,130,31-45,Overweight
+P0020,50,Male,Site F - Philadelphia,Hispanic or Latino,31.5,2025-08-18,True,High,False,Lost to Follow-up,41,46-60,Obese
+P0021,58,Male,Site C - Chicago,Black or African American,29.1,2025-07-17,False,Low,False,Active,73,46-60,Overweight
+P0022,60,Male,Site I - Dallas,Black or African American,26.7,2025-05-27,True,Low,False,Active,124,46-60,Overweight
+P0023,40,Male,Site H - San Diego,Black or African American,29.1,2025-07-24,False,Low,False,Active,66,31-45,Overweight
+P0024,83,Male,Site B - Los Angeles,Native American,29.5,2025-08-29,False,Medium,False,Active,30,75+,Overweight
+P0025,51,Male,Site G - San Antonio,White,36.9,2025-06-11,True,Low,False,Lost to Follow-up,109,46-60,Obese
+P0026,62,Female,Site C - Chicago,White,25.5,2025-04-02,False,Low,False,Active,179,61-75,Overweight
+P0027,42,Female,Site C - Chicago,White,19.9,2025-05-11,True,Medium,False,Active,140,31-45,Normal
+P0028,60,Female,Site J - San Jose,White,30.2,2025-07-18,True,Medium,False,Active,72,46-60,Obese
+P0029,34,Female,Site H - San Diego,Hispanic or Latino,22.2,2025-06-27,False,Low,False,Active,93,31-45,Normal
+P0030,85,Female,Site H - San Diego,Hispanic or Latino,21.4,2025-06-11,True,Low,False,Active,109,75+,Normal
+P0031,85,Male,Site F - Philadelphia,White,18.5,2025-05-10,True,Medium,False,Active,141,75+,Underweight
+P0032,71,Female,Site B - Los Angeles,Black or African American,35.6,2025-05-26,False,High,False,Completed,125,61-75,Obese
+P0033,24,Female,Site C - Chicago,White,26.7,2025-06-26,True,Low,False,Active,94,18-30,Overweight
+P0034,67,Male,Site B - Los Angeles,White,29.8,2025-04-27,True,High,False,Withdrawn,154,61-75,Overweight
+P0035,85,Male,Site B - Los Angeles,White,30.1,2025-04-24,False,High,False,Active,157,75+,Obese
+P0036,66,Female,Site D - Houston,White,18.0,2025-07-07,False,Medium,False,Active,83,61-75,Underweight
+P0037,76,Female,Site I - Dallas,Black or African American,20.3,2025-04-25,True,High,True,Active,156,75+,Normal
+P0038,45,Female,Site F - Philadelphia,White,23.5,2025-07-01,True,Medium,False,Active,89,31-45,Normal
+P0039,59,Male,Site C - Chicago,Hispanic or Latino,23.5,2025-06-28,True,Low,False,Active,92,46-60,Normal
+P0040,67,Female,Site I - Dallas,Hispanic or Latino,23.5,2025-06-07,True,High,False,Withdrawn,113,61-75,Normal
+P0041,54,Male,Site H - San Diego,White,26.5,2025-04-12,False,Low,False,Active,169,46-60,Overweight
+P0042,71,Male,Site I - Dallas,White,23.9,2025-07-27,False,High,False,Active,63,61-75,Normal
+P0043,59,Female,Site F - Philadelphia,Black or African American,25.5,2025-08-16,True,Low,False,Active,43,46-60,Overweight
+P0044,36,Female,Site H - San Diego,White,23.2,2025-05-02,True,Low,False,Active,149,31-45,Normal
+P0045,42,Male,Site H - San Diego,Black or African American,24.7,2025-07-06,True,Low,True,Active,84,31-45,Normal
+P0046,47,Female,Site A - New York,White,30.6,2025-04-21,False,Low,False,Active,160,46-60,Obese
+P0047,44,Female,Site E - Phoenix,White,25.1,2025-08-20,False,Low,True,Active,39,31-45,Overweight
+P0048,39,Male,Site A - New York,White,31.1,2025-06-15,True,Medium,False,Active,105,31-45,Obese
+P0049,65,Male,Site J - San Jose,White,24.4,2025-07-02,False,Low,True,Active,88,61-75,Normal
+P0050,55,Female,Site E - Phoenix,Black or African American,24.3,2025-08-26,True,High,False,Lost to Follow-up,33,46-60,Normal
+P0051,85,Male,Site B - Los Angeles,White,22.8,2025-05-20,True,Low,False,Completed,131,75+,Normal
+P0052,57,Female,Site E - Phoenix,White,28.3,2025-04-18,True,Medium,False,Withdrawn,163,46-60,Overweight
+P0053,35,Female,Site I - Dallas,White,33.3,2025-04-12,True,High,False,Active,169,31-45,Obese
+P0054,47,Female,Site D - Houston,Asian,27.1,2025-05-29,True,Low,False,Active,122,46-60,Overweight
+P0055,55,Female,Site J - San Jose,Hispanic or Latino,26.2,2025-06-14,True,Low,False,Active,106,46-60,Overweight
+P0056,52,Male,Site G - San Antonio,Black or African American,22.7,2025-04-21,True,Low,False,Active,160,46-60,Normal
+P0057,72,Female,Site E - Phoenix,Hispanic or Latino,26.3,2025-05-30,True,High,False,Active,121,61-75,Overweight
+P0058,75,Male,Site A - New York,White,19.1,2025-04-26,True,High,False,Active,155,61-75,Normal
+P0059,77,Male,Site F - Philadelphia,Hispanic or Latino,26.3,2025-07-07,False,Low,False,Completed,83,75+,Overweight
+P0060,54,Female,Site C - Chicago,Black or African American,25.5,2025-06-11,True,Low,False,Active,109,46-60,Overweight
+P0061,60,Male,Site C - Chicago,Hispanic or Latino,22.2,2025-07-26,True,Low,False,Active,64,46-60,Normal
+P0062,62,Male,Site C - Chicago,White,20.3,2025-07-03,True,Low,False,Active,87,61-75,Normal
+P0063,44,Female,Site J - San Jose,White,26.9,2025-05-12,True,Low,False,Active,139,31-45,Overweight
+P0064,66,Male,Site E - Phoenix,Black or African American,23.5,2025-07-04,True,Low,True,Active,86,61-75,Normal
+P0065,63,Female,Site E - Phoenix,White,27.2,2025-06-30,True,Low,False,Active,90,61-75,Overweight
+P0066,58,Male,Site C - Chicago,White,22.9,2025-05-24,False,Low,False,Active,127,46-60,Normal
+P0067,54,Male,Site E - Phoenix,White,31.9,2025-06-08,True,Low,False,Active,112,46-60,Obese
+P0068,52,Female,Site F - Philadelphia,White,26.1,2025-04-19,True,Low,False,Active,162,46-60,Overweight
+P0069,45,Male,Site C - Chicago,White,24.1,2025-05-14,False,Low,False,Completed,137,31-45,Normal
+P0070,42,Male,Site D - Houston,Asian,26.9,2025-08-15,True,Low,False,Active,44,31-45,Overweight
+P0071,56,Female,Site C - Chicago,Hispanic or Latino,29.0,2025-06-02,True,Low,False,Active,118,46-60,Overweight
+P0072,27,Male,Site F - Philadelphia,White,21.4,2025-05-12,True,Low,False,Active,139,18-30,Normal
+P0073,42,Male,Site J - San Jose,White,24.5,2025-07-28,False,Low,False,Active,62,31-45,Normal
+P0074,38,Female,Site D - Houston,White,26.7,2025-07-07,True,Low,True,Active,83,31-45,Overweight
+P0075,72,Male,Site H - San Diego,White,27.0,2025-06-09,True,Medium,False,Active,111,61-75,Overweight
+P0076,48,Male,Site I - Dallas,White,25.0,2025-08-21,True,Medium,False,Active,38,46-60,Normal
+P0077,55,Male,Site I - Dallas,White,32.7,2025-05-27,True,Medium,False,Lost to Follow-up,124,46-60,Obese
+P0078,66,Female,Site C - Chicago,White,28.0,2025-06-23,True,High,False,Withdrawn,97,61-75,Overweight
+P0079,48,Male,Site H - San Diego,White,22.6,2025-04-15,True,Low,False,Active,166,46-60,Normal
+P0080,60,Male,Site I - Dallas,White,31.1,2025-05-29,True,Medium,False,Active,122,46-60,Obese
+P0081,68,Female,Site E - Phoenix,White,31.4,2025-04-09,True,Medium,False,Lost to Follow-up,172,61-75,Obese
+P0082,77,Male,Site F - Philadelphia,White,25.2,2025-06-20,False,Medium,False,Active,100,75+,Overweight
+P0083,62,Female,Site B - Los Angeles,White,26.9,2025-07-12,True,Medium,False,Lost to Follow-up,78,61-75,Overweight
+P0084,47,Female,Site A - New York,Other,36.2,2025-06-08,True,Medium,True,Active,112,46-60,Obese
+P0085,39,Female,Site J - San Jose,White,19.4,2025-04-17,True,Low,False,Active,164,31-45,Normal
+P0086,80,Male,Site B - Los Angeles,White,29.2,2025-05-25,True,Medium,False,Active,126,75+,Overweight
+P0087,50,Male,Site J - San Jose,White,21.6,2025-08-24,True,Low,False,Active,35,46-60,Normal
+P0088,54,Male,Site B - Los Angeles,White,36.3,2025-06-20,True,Low,False,Active,100,46-60,Obese
+P0089,18,Male,Site E - Phoenix,White,30.4,2025-05-25,True,Low,False,Active,126,18-30,Obese
+P0090,43,Male,Site B - Los Angeles,Black or African American,25.6,2025-08-06,True,Low,False,Active,53,31-45,Overweight
+P0091,47,Female,Site B - Los Angeles,White,28.0,2025-07-11,True,Low,False,Active,79,46-60,Overweight
+P0092,61,Female,Site B - Los Angeles,White,19.3,2025-07-27,False,High,False,Active,63,61-75,Normal
+P0093,44,Female,Site B - Los Angeles,Black or African American,20.4,2025-05-07,True,Low,False,Withdrawn,144,31-45,Normal
+P0094,80,Female,Site A - New York,Hispanic or Latino,29.9,2025-06-07,False,Medium,False,Active,113,75+,Overweight
+P0095,59,Female,Site B - Los Angeles,White,19.2,2025-05-06,False,Medium,False,Active,145,46-60,Normal
+P0096,60,Male,Site J - San Jose,White,19.5,2025-06-03,True,Medium,False,Withdrawn,117,46-60,Normal
+P0097,58,Female,Site G - San Antonio,White,29.9,2025-08-22,False,Low,False,Active,37,46-60,Overweight
+P0098,35,Male,Site G - San Antonio,White,20.3,2025-08-16,True,Low,False,Active,43,31-45,Normal
+P0099,40,Female,Site D - Houston,Black or African American,30.2,2025-06-07,False,Low,True,Active,113,31-45,Obese
+P0100,65,Female,Site A - New York,White,19.2,2025-08-28,False,Medium,False,Active,31,61-75,Normal
+P0101,54,Female,Site D - Houston,White,33.1,2025-07-19,False,Medium,False,Active,71,46-60,Obese
+P0102,69,Male,Site A - New York,Asian,20.7,2025-08-28,True,Medium,False,Active,31,61-75,Normal
+P0103,63,Female,Site I - Dallas,White,30.3,2025-07-12,True,Medium,False,Active,78,61-75,Obese
+P0104,58,Female,Site A - New York,Black or African American,27.8,2025-07-02,False,Low,False,Active,88,46-60,Overweight
+P0105,55,Male,Site I - Dallas,White,26.1,2025-05-27,True,Low,True,Active,124,46-60,Overweight
+P0106,50,Male,Site G - San Antonio,White,27.7,2025-05-06,False,Low,False,Active,145,46-60,Overweight
+P0107,59,Male,Site A - New York,Hispanic or Latino,29.6,2025-08-09,True,Low,False,Active,50,46-60,Overweight
+P0108,70,Other,Site C - Chicago,Hispanic or Latino,24.0,2025-08-05,True,Low,False,Completed,54,61-75,Normal
+P0109,48,Male,Site G - San Antonio,White,31.8,2025-04-24,True,Low,False,Active,157,46-60,Obese
+P0110,41,Male,Site A - New York,Other,18.3,2025-04-13,False,Low,False,Withdrawn,168,31-45,Underweight
+P0111,69,Female,Site D - Houston,Black or African American,25.1,2025-04-29,True,Medium,False,Active,152,61-75,Overweight
+P0112,62,Male,Site B - Los Angeles,White,28.2,2025-05-10,True,Low,True,Lost to Follow-up,141,61-75,Overweight
+P0113,76,Female,Site B - Los Angeles,Hispanic or Latino,23.7,2025-05-11,True,Medium,False,Active,140,75+,Normal
+P0114,32,Male,Site I - Dallas,White,28.2,2025-07-18,True,Medium,False,Active,72,31-45,Overweight
+P0115,34,Female,Site E - Phoenix,White,23.1,2025-04-17,True,Low,False,Active,164,31-45,Normal
+P0116,58,Female,Site F - Philadelphia,Hispanic or Latino,31.3,2025-07-08,True,Low,False,Active,82,46-60,Obese
+P0117,63,Female,Site I - Dallas,Black or African American,30.4,2025-07-07,False,High,False,Withdrawn,83,61-75,Obese
+P0118,72,Male,Site I - Dallas,Hispanic or Latino,24.5,2025-07-29,True,Medium,False,Withdrawn,61,61-75,Normal
+P0119,55,Male,Site C - Chicago,Black or African American,31.1,2025-08-14,False,Low,False,Active,45,46-60,Obese
+P0120,66,Female,Site A - New York,Hispanic or Latino,28.2,2025-06-04,True,Medium,False,Lost to Follow-up,116,61-75,Overweight
+P0121,48,Male,Site G - San Antonio,White,26.8,2025-08-20,True,Medium,True,Withdrawn,39,46-60,Overweight
+P0122,32,Female,Site J - San Jose,Hispanic or Latino,27.5,2025-04-03,True,Low,True,Active,178,31-45,Overweight
+P0123,78,Female,Site D - Houston,White,25.7,2025-04-30,False,Low,False,Active,151,75+,Overweight
+P0124,22,Female,Site B - Los Angeles,White,30.5,2025-08-16,True,Medium,False,Active,43,18-30,Obese
+P0125,64,Male,Site F - Philadelphia,White,25.6,2025-06-08,True,Low,False,Active,112,61-75,Overweight
+P0126,58,Male,Site A - New York,Black or African American,29.8,2025-06-27,True,Low,False,Active,93,46-60,Overweight
+P0127,60,Female,Site I - Dallas,Hispanic or Latino,27.8,2025-04-29,True,Medium,False,Active,152,46-60,Overweight
+P0128,65,Male,Site A - New York,Black or African American,20.6,2025-06-15,True,Low,True,Active,105,61-75,Normal
+P0129,67,Male,Site D - Houston,White,23.4,2025-07-21,True,Medium,False,Active,69,61-75,Normal
+P0130,18,Female,Site I - Dallas,Hispanic or Latino,25.9,2025-05-11,True,Low,False,Completed,140,18-30,Overweight
+P0131,54,Female,Site G - San Antonio,White,21.4,2025-07-26,True,Low,False,Active,64,46-60,Normal
+P0132,24,Male,Site A - New York,White,26.8,2025-04-01,False,Low,False,Active,180,18-30,Overweight
+P0133,75,Male,Site J - San Jose,White,29.7,2025-06-07,True,Medium,False,Withdrawn,113,61-75,Overweight
+P0134,60,Male,Site H - San Diego,White,26.5,2025-08-07,False,Low,False,Active,52,46-60,Overweight
+P0135,81,Male,Site A - New York,White,26.8,2025-05-16,True,Medium,False,Active,135,75+,Overweight
+P0136,61,Male,Site H - San Diego,Black or African American,37.9,2025-08-08,False,Low,False,Completed,51,61-75,Obese
+P0137,55,Male,Site G - San Antonio,White,26.5,2025-04-28,True,Low,False,Active,153,46-60,Overweight
+P0138,29,Female,Site D - Houston,White,19.8,2025-06-16,True,High,False,Lost to Follow-up,104,18-30,Normal
+P0139,52,Male,Site F - Philadelphia,Asian,29.5,2025-08-08,True,Medium,False,Active,51,46-60,Overweight
+P0140,75,Female,Site I - Dallas,White,27.3,2025-05-21,True,Medium,False,Withdrawn,130,61-75,Overweight
+P0141,66,Male,Site F - Philadelphia,White,16.0,2025-05-10,True,Medium,False,Active,141,61-75,Underweight
+P0142,72,Female,Site D - Houston,White,17.6,2025-07-05,False,High,False,Active,85,61-75,Underweight
+P0143,77,Male,Site B - Los Angeles,White,29.4,2025-05-12,False,Medium,False,Withdrawn,139,75+,Overweight
+P0144,85,Female,Site I - Dallas,White,24.7,2025-08-17,True,Medium,False,Lost to Follow-up,42,75+,Normal
+P0145,65,Male,Site E - Phoenix,White,25.7,2025-08-14,True,Medium,False,Active,45,61-75,Overweight
+P0146,60,Female,Site G - San Antonio,White,22.2,2025-04-01,True,Low,False,Active,180,46-60,Normal
+P0147,45,Female,Site B - Los Angeles,Black or African American,33.7,2025-06-22,False,Medium,False,Active,98,31-45,Obese
+P0148,60,Female,Site F - Philadelphia,White,26.8,2025-08-04,True,Low,False,Active,55,46-60,Overweight
+P0149,79,Male,Site F - Philadelphia,Not Reported,21.4,2025-04-05,True,Medium,False,Active,176,75+,Normal
+P0150,59,Female,Site G - San Antonio,Hispanic or Latino,19.3,2025-04-29,True,Low,False,Active,152,46-60,Normal
+P0151,50,Female,Site A - New York,White,31.5,2025-07-02,True,Low,False,Active,88,46-60,Obese
+P0152,33,Male,Site D - Houston,White,20.8,2025-06-18,True,Low,False,Active,102,31-45,Normal
+P0153,44,Male,Site I - Dallas,White,35.0,2025-06-01,True,Low,False,Active,119,31-45,Obese
+P0154,30,Female,Site H - San Diego,Hispanic or Latino,25.0,2025-04-15,False,Low,True,Withdrawn,166,18-30,Normal
+P0155,43,Female,Site B - Los Angeles,White,24.9,2025-06-01,True,Low,False,Active,119,31-45,Normal
+P0156,75,Female,Site C - Chicago,White,25.5,2025-08-24,True,Medium,False,Active,35,61-75,Overweight
+P0157,45,Female,Site B - Los Angeles,Asian,27.3,2025-04-21,True,Low,True,Active,160,31-45,Overweight
+P0158,75,Female,Site F - Philadelphia,Hispanic or Latino,24.9,2025-04-22,True,Medium,False,Active,159,61-75,Normal
+P0159,36,Female,Site C - Chicago,Hispanic or Latino,23.2,2025-08-03,True,Low,False,Active,56,31-45,Normal
+P0160,59,Female,Site B - Los Angeles,Hispanic or Latino,24.6,2025-04-18,True,Low,True,Active,163,46-60,Normal
+P0161,69,Male,Site D - Houston,White,34.8,2025-08-15,True,Medium,False,Active,44,61-75,Obese
+P0162,79,Female,Site J - San Jose,White,27.2,2025-05-03,False,Low,False,Active,148,75+,Overweight
+P0163,46,Male,Site C - Chicago,White,21.9,2025-05-03,True,Low,False,Active,148,46-60,Normal
+P0164,31,Female,Site C - Chicago,White,28.8,2025-07-31,True,Medium,False,Active,59,31-45,Overweight
+P0165,63,Male,Site G - San Antonio,White,26.3,2025-08-19,True,Low,False,Active,40,61-75,Overweight
+P0166,41,Female,Site H - San Diego,Asian,23.9,2025-05-13,True,Low,False,Withdrawn,138,31-45,Normal
+P0167,73,Female,Site F - Philadelphia,White,26.6,2025-06-07,False,Medium,False,Active,113,61-75,Overweight
+P0168,52,Male,Site C - Chicago,White,23.2,2025-08-14,False,Low,False,Active,45,46-60,Normal
+P0169,38,Female,Site E - Phoenix,Asian,17.4,2025-07-18,True,Medium,False,Withdrawn,72,31-45,Underweight
+P0170,53,Female,Site H - San Diego,Hispanic or Latino,24.0,2025-05-25,True,Low,False,Active,126,46-60,Normal
+P0171,55,Female,Site I - Dallas,White,26.0,2025-08-17,False,Low,False,Active,42,46-60,Overweight
+P0172,67,Male,Site E - Phoenix,White,24.5,2025-05-22,True,Medium,True,Active,129,61-75,Normal
+P0173,55,Female,Site D - Houston,White,28.1,2025-06-19,True,Low,False,Active,101,46-60,Overweight
+P0174,52,Female,Site F - Philadelphia,White,23.2,2025-07-12,False,Low,True,Active,78,46-60,Normal
+P0175,45,Female,Site A - New York,White,24.8,2025-07-05,False,Low,False,Active,85,31-45,Normal
+P0176,72,Female,Site D - Houston,White,25.5,2025-07-22,True,Medium,False,Active,68,61-75,Overweight
+P0177,63,Female,Site A - New York,White,29.0,2025-08-11,True,Low,False,Active,48,61-75,Overweight
+P0178,60,Male,Site B - Los Angeles,Native American,22.0,2025-07-25,True,Low,False,Active,65,46-60,Normal
+P0179,54,Male,Site C - Chicago,Hispanic or Latino,22.3,2025-05-01,True,Low,False,Active,150,46-60,Normal
+P0180,30,Female,Site J - San Jose,Hispanic or Latino,30.6,2025-06-03,True,Low,False,Active,117,18-30,Obese
+P0181,85,Female,Site I - Dallas,Black or African American,23.6,2025-05-28,False,High,False,Withdrawn,123,75+,Normal
+P0182,43,Female,Site G - San Antonio,White,26.9,2025-04-17,True,Low,True,Active,164,31-45,Overweight
+P0183,34,Male,Site H - San Diego,Black or African American,22.1,2025-06-26,True,Medium,False,Active,94,31-45,Normal
+P0184,65,Male,Site J - San Jose,White,28.4,2025-04-06,True,Medium,False,Active,175,61-75,Overweight
+P0185,74,Female,Site E - Phoenix,White,28.2,2025-08-29,False,Medium,False,Active,30,61-75,Overweight
+P0186,68,Female,Site H - San Diego,Hispanic or Latino,22.6,2025-08-20,True,Medium,False,Active,39,61-75,Normal
+P0187,39,Male,Site F - Philadelphia,Asian,18.1,2025-05-29,True,Low,False,Active,122,31-45,Underweight
+P0188,50,Male,Site H - San Diego,Hispanic or Latino,29.4,2025-08-29,True,Low,False,Active,30,46-60,Overweight
+P0189,64,Male,Site E - Phoenix,Other,30.7,2025-05-27,False,Medium,False,Active,124,61-75,Obese
+P0190,45,Female,Site I - Dallas,Hispanic or Latino,35.2,2025-04-02,True,High,False,Active,179,31-45,Obese
+P0191,66,Female,Site H - San Diego,White,27.5,2025-04-19,True,Medium,False,Active,162,61-75,Overweight
+P0192,42,Female,Site G - San Antonio,Black or African American,23.9,2025-04-16,False,Low,False,Active,165,31-45,Normal
+P0193,43,Female,Site C - Chicago,White,28.6,2025-05-29,True,Low,False,Active,122,31-45,Overweight
+P0194,49,Male,Site G - San Antonio,Hispanic or Latino,19.2,2025-04-18,True,Medium,False,Active,163,46-60,Normal
+P0195,32,Female,Site A - New York,White,31.1,2025-04-09,True,Low,False,Active,172,31-45,Obese
+P0196,57,Female,Site F - Philadelphia,Black or African American,23.5,2025-06-24,False,Low,False,Active,96,46-60,Normal
+P0197,52,Female,Site G - San Antonio,Hispanic or Latino,24.2,2025-04-19,True,Low,False,Active,162,46-60,Normal
+P0198,52,Male,Site B - Los Angeles,White,26.8,2025-08-10,True,Low,False,Active,49,46-60,Overweight
+P0199,51,Female,Site D - Houston,White,22.2,2025-05-31,True,Low,False,Active,120,46-60,Normal
+P0200,38,Male,Site I - Dallas,White,18.4,2025-06-11,False,Medium,False,Active,109,31-45,Underweight
