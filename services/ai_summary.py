@@ -56,7 +56,7 @@ def call_llm(client, client_type: str, messages: list, max_tokens: int = 1000) -
         st.warning(f"⚠️ AI service error: {str(e)}. Using fallback response.")
         return None
 
-def generate_summaries(data_summary: str, metrics: Dict[str, Any]) -> Dict[str, str]:
+def generate_summaries(data_summary: str, metrics: Dict[str, Any], feedback: Optional[str] = None) -> Dict[str, str]:
     """
     Generate AI-powered summaries for different audiences
     
@@ -87,7 +87,9 @@ def generate_summaries(data_summary: str, metrics: Dict[str, Any]) -> Dict[str, 
                     data_summary=data_summary,
                     metrics=metrics_str
                 )
-                
+                if feedback:
+                    prompt += f"\n\nUser Feedback: {feedback}\n\nPlease regenerate the summary taking this feedback into account."
+                    
                 messages = [
                     {"role": "system", "content": "You are an expert clinical research analyst."},
                     {"role": "user", "content": prompt}
