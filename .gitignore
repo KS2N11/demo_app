@@ -1,2 +1,4 @@
 /.env
-instructions.py
+instructions.md
+/.venv
+__pycache__/
