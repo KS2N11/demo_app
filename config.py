@@ -95,14 +95,32 @@ You are an expert data analyst. Analyze the user's query and determine the best 
 
 User Query: {query}
 
-Available Data Columns: {columns}
-Data Summary: {data_summary}
+Dataset Context:
+- Total Records: {total_records}
+- Available Columns: {columns}
 
-Determine:
-1. What type of analysis is needed (chart, table, summary, comparison)
-2. Which columns should be used
-3. What chart type would be most appropriate (if applicable)
-4. Any grouping or aggregation needed
+Pre-computed Statistics:
+{data_statistics}
+
+Site Performance Metrics:
+{site_statistics}
+
+Additional Context:
+{additional_context}
+
+Instructions:
+1. Review the pre-computed statistics and site metrics first - they contain aggregated data that may answer the query directly
+2. Determine what type of analysis is needed:
+   - For site comparisons, use the site performance metrics
+   - For risk analysis, check the risk distribution in additional context
+   - For age-related queries, refer to age statistics in additional context
+   - For other analyses, consider the available columns and data statistics
+
+3. Choose the appropriate response format:
+   - table: For comparing multiple metrics or showing detailed breakdowns
+   - chart: For visualizing trends or distributions
+   - summary: For insights that combine multiple statistics
+   - comparison: For explicit comparisons between groups
 
 Respond in JSON format:
 {{
@@ -115,6 +133,8 @@ Respond in JSON format:
     "title": "Descriptive title for the analysis",
     "explanation": "Brief explanation of what this analysis shows"
 }}
+
+Note: When relevant statistics are already available in the context, prefer using those instead of requesting raw data analysis.
 """
 
 INSIGHT_GENERATION_PROMPT = """

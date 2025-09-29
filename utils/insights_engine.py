@@ -117,6 +117,60 @@ def match_common_patterns(query: str, df: pd.DataFrame) -> Dict[str, Any]:
         st.error(f"Error in pattern matching: {e}")
         return None
 
+def generate_data_context(df: pd.DataFrame) -> Dict[str, Any]:
+    """
+    Generate comprehensive data context for AI analysis
+    
+    Args:
+        df: Cleaned dataframe
+        
+    Returns:
+        Dictionary containing data context including summary statistics and aggregations
+    """
+    context = {}
+    
+    # Overall dataset statistics
+    context['total_records'] = len(df)
+    context['columns'] = list(df.columns)
+    context['sample_data'] = df.head(3).to_dict('records')
+    
+    # Add summary statistics for numeric columns
+    numeric_cols = df.select_dtypes(include=['number']).columns
+    if len(numeric_cols) > 0:
+        context['numeric_summaries'] = df[numeric_cols].describe().to_dict()
+    
+    # Add categorical column distributions
+    categorical_cols = df.select_dtypes(include=['object', 'category']).columns
+    context['categorical_distributions'] = {
+        col: df[col].value_counts().to_dict() for col in categorical_cols
+    }
+    
+    # Site-level aggregations
+    if 'location' in df.columns:
+        site_stats = df.groupby('location').agg({
+            'participant_id': 'count',
+            'meets_criteria': ['sum', lambda x: (x.sum() / len(x)) * 100],
+            'dropout_risk': lambda x: (x == 'High').sum()
+        }).round(2)
+        site_stats.columns = ['total_participants', 'eligible_count', 'eligibility_rate', 'high_risk_count']
+        context['site_statistics'] = site_stats.to_dict('index')
+    
+    # Risk distribution
+    if 'dropout_risk' in df.columns:
+        context['risk_distribution'] = df['dropout_risk'].value_counts().to_dict()
+    
+    # Age statistics if available
+    if 'age' in df.columns:
+        context['age_statistics'] = {
+            'mean': df['age'].mean(),
+            'median': df['age'].median(),
+            'min': df['age'].min(),
+            'max': df['age'].max(),
+            'distribution': df['age'].value_counts().to_dict()
+        }
+    
+    return context
+
 def analyze_query_with_ai(query: str, df: pd.DataFrame) -> Dict[str, Any]:
     """
     Use AI to analyze complex queries
@@ -133,14 +187,47 @@ def analyze_query_with_ai(query: str, df: pd.DataFrame) -> Dict[str, Any]:
         if not client or not model:
             return None
         
-        # Prepare data context
-        columns = list(df.columns)
-        sample_data = df.head(3).to_dict('records')
+        # Generate comprehensive data context
+        data_context = generate_data_context(df)
+        
+        # Format the statistics and context for the prompt
+        data_stats = []
+        if 'numeric_summaries' in data_context:
+            data_stats.append("Numeric Column Statistics:")
+            for col, stats in data_context['numeric_summaries'].items():
+                data_stats.append(f"- {col}: mean={stats['mean']:.2f}, min={stats['min']:.2f}, max={stats['max']:.2f}")
+        
+        if 'categorical_distributions' in data_context:
+            data_stats.append("\nCategory Distributions:")
+            for col, dist in data_context['categorical_distributions'].items():
+                top_cats = dict(sorted(dist.items(), key=lambda x: x[1], reverse=True)[:3])
+                data_stats.append(f"- {col}: " + ", ".join(f"{k}: {v}" for k, v in top_cats.items()))
+        
+        site_stats = []
+        if 'site_statistics' in data_context:
+            site_stats.append("Site Performance:")
+            for site, stats in data_context['site_statistics'].items():
+                site_stats.append(f"- {site}: {stats['total_participants']} participants, {stats['eligibility_rate']:.1f}% eligible")
+        
+        additional_context = []
+        if 'risk_distribution' in data_context:
+            additional_context.append("Risk Distribution:")
+            for risk, count in data_context['risk_distribution'].items():
+                additional_context.append(f"- {risk}: {count} participants")
+        
+        if 'age_statistics' in data_context:
+            additional_context.append("\nAge Statistics:")
+            age_stats = data_context['age_statistics']
+            additional_context.append(f"- Mean: {age_stats['mean']:.1f}, Median: {age_stats['median']:.1f}")
+            additional_context.append(f"- Range: {age_stats['min']:.1f} to {age_stats['max']:.1f}")
         
         prompt = QUERY_ANALYSIS_PROMPT.format(
             query=query,
-            columns=columns,
-            data_summary=sample_data
+            total_records=data_context['total_records'],
+            columns=data_context['columns'],
+            data_statistics="\n".join(data_stats),
+            site_statistics="\n".join(site_stats),
+            additional_context="\n".join(additional_context)
         )
         
         # Fix: Create proper messages structure
