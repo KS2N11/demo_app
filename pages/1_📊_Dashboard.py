@@ -112,14 +112,14 @@ def main():
         site_performance = pd.DataFrame.from_dict(metrics['site_performance'], orient='index')
         site_performance = site_performance.sort_values('eligibility_rate', ascending=False)
         
-        # Color code the performance
+        # Color code the performance with better contrast
         def color_performance(val):
             if val >= 80:
-                color = 'background-color: #d4edda'  # Light green
+                color = 'background-color: #c8e6c9; color: #2e7d32; font-weight: bold'  # Light green with dark text
             elif val >= 60:
-                color = 'background-color: #fff3cd'  # Light yellow
+                color = 'background-color: #ffe0b2; color: #ef6c00; font-weight: bold'  # Light orange with dark text
             else:
-                color = 'background-color: #f8d7da'  # Light red
+                color = 'background-color: #ffcdd2; color: #c62828; font-weight: bold'  # Light red with dark text
             return color
         
         styled_df = site_performance.style.applymap(color_performance, subset=['eligibility_rate'])
