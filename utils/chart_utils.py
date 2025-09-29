@@ -154,7 +154,10 @@ def create_eligibility_funnel(df: pd.DataFrame) -> go.Figure:
         fig.update_layout(
             title="Participant Flow Analysis",
             font_size=12,
-            height=400
+            height=400,
+            margin=dict(l=80, r=80, t=100, b=80),
+            # Prevent label overlap
+            showlegend=False
         )
         
         return fig
@@ -237,7 +240,16 @@ def create_dropout_risk_chart(df: pd.DataFrame) -> go.Figure:
             xaxis_title=x_title,
             yaxis_title="Number of Participants",
             height=400,
-            showlegend=False
+            showlegend=False,
+            margin=dict(l=80, r=80, t=100, b=80),
+            # Prevent label overlap
+            xaxis=dict(
+                tickangle=45 if len(risk_counts) > 5 else 0,
+                automargin=True
+            ),
+            yaxis=dict(
+                automargin=True
+            )
         )
         
         return fig
@@ -348,6 +360,15 @@ def create_site_distribution(df: pd.DataFrame) -> go.Figure:
                 y=1.02,
                 xanchor="right",
                 x=1
+            ),
+            margin=dict(l=120, r=80, t=100, b=80),
+            # Prevent label overlap for y-axis labels
+            yaxis=dict(
+                automargin=True,
+                tickangle=0
+            ),
+            xaxis=dict(
+                automargin=True
             )
         )
         
@@ -554,7 +575,15 @@ def create_one_hot_analysis_chart(df: pd.DataFrame) -> go.Figure:
             yaxis_title="Count (Positive Cases)",
             height=400,
             showlegend=False,
-            xaxis_tickangle=-45
+            margin=dict(l=80, r=80, t=100, b=120),
+            # Prevent label overlap
+            xaxis=dict(
+                tickangle=-45,
+                automargin=True
+            ),
+            yaxis=dict(
+                automargin=True
+            )
         )
         
         return fig
@@ -715,17 +744,28 @@ def create_custom_chart(df: pd.DataFrame, chart_type: str, x_col: str, y_col: st
             ))
         
         elif chart_type == 'scatter' and y_col:
-            color = df[group_col] if group_col and group_col in df.columns else None
-            fig.add_trace(go.Scatter(
-                x=df[x_col],
-                y=df[y_col],
-                mode='markers',
-                marker=dict(
-                    color=color,
-                    colorscale='viridis' if color is not None else None
-                ),
-                text=df[group_col] if group_col else None
-            ))
+            if group_col and group_col in df.columns:
+                # Handle categorical color mapping properly
+                df_copy = df.copy()
+                df_copy[group_col] = df_copy[group_col].astype(str)  # Ensure categorical as string
+                unique_groups = df_copy[group_col].unique()
+                
+                for i, group in enumerate(unique_groups):
+                    group_data = df_copy[df_copy[group_col] == group]
+                    fig.add_trace(go.Scatter(
+                        x=group_data[x_col],
+                        y=group_data[y_col],
+                        mode='markers',
+                        name=str(group),
+                        marker=dict(color=CHART_COLORS['primary'] if i == 0 else CHART_COLORS['info'])
+                    ))
+            else:
+                fig.add_trace(go.Scatter(
+                    x=df[x_col],
+                    y=df[y_col],
+                    mode='markers',
+                    marker=dict(color=CHART_COLORS['primary'])
+                ))
         
         elif chart_type == 'line' and y_col:
             if group_col and group_col in df.columns:
@@ -758,6 +798,15 @@ def create_custom_chart(df: pd.DataFrame, chart_type: str, x_col: str, y_col: st
             xaxis_title=x_col.replace('_', ' ').title(),
             yaxis_title=y_col.replace('_', ' ').title() if y_col else 'Count',
             height=400,
+            margin=dict(l=80, r=80, t=100, b=80),
+            # Prevent label overlap
+            xaxis=dict(
+                tickangle=45 if chart_type in ['bar', 'line'] and df[x_col].nunique() > 5 else 0,
+                automargin=True
+            ),
+            yaxis=dict(
+                automargin=True
+            )
         )
         
         return fig
@@ -770,7 +819,7 @@ def create_custom_chart(df: pd.DataFrame, chart_type: str, x_col: str, y_col: st
 
 def create_correlation_heatmap(df: pd.DataFrame) -> go.Figure:
     """
-    Create correlation heatmap for numeric columns
+    Create correlation heatmap for numeric columns with user-friendly names
     
     Args:
         df: Cleaned dataframe
@@ -779,32 +828,58 @@ def create_correlation_heatmap(df: pd.DataFrame) -> go.Figure:
         Plotly figure object
     """
     try:
-        # Select only numeric columns
-        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        # Get only original numeric columns (filter out encoded ones)
+        original_cols = get_original_columns(df)
+        numeric_cols = df[original_cols].select_dtypes(include=[np.number]).columns
         
         if len(numeric_cols) < 2:
             fig = go.Figure()
             fig.add_annotation(text="Not enough numeric columns for correlation analysis", 
-                              xref="paper", yref="paper", x=0.5, y=0.5)
+                              xref="paper", yref="paper", x=0.5, y=0.5, font=dict(size=14))
+            fig.update_layout(height=400, width=600)
             return fig
         
+        # Create correlation matrix
         corr_matrix = df[numeric_cols].corr()
+        
+        # Create user-friendly column names for display
+        friendly_names = [col.replace('_', ' ').title() for col in numeric_cols]
+        
+        # Calculate dynamic size based on number of columns
+        size = max(500, len(numeric_cols) * 50)
         
         fig = go.Figure(data=go.Heatmap(
             z=corr_matrix.values,
-            x=corr_matrix.columns,
-            y=corr_matrix.columns,
+            x=friendly_names,
+            y=friendly_names,
             colorscale='RdBu',
             zmid=0,
             text=np.round(corr_matrix.values, 2),
             texttemplate="%{text}",
-            textfont={"size": 10},
+            textfont={"size": max(8, min(12, 100 // len(numeric_cols)))},
+            hoverongaps=False,
+            colorbar=dict(
+                title="Correlation",
+                titleside="right"
+            )
         ))
         
         fig.update_layout(
-            title="Correlation Heatmap",
-            height=500,
-            width=500
+            title=dict(
+                text="Feature Correlation Matrix",
+                x=0.5,
+                font=dict(size=16)
+            ),
+            height=size,
+            width=size,
+            margin=dict(l=100, r=100, t=80, b=100),
+            xaxis=dict(
+                tickangle=45,
+                side='bottom'
+            ),
+            yaxis=dict(
+                tickangle=0
+            )
         )
         
         return fig
@@ -812,5 +887,6 @@ def create_correlation_heatmap(df: pd.DataFrame) -> go.Figure:
     except Exception as e:
         fig = go.Figure()
         fig.add_annotation(text=f"Error creating heatmap: {e}", 
-                          xref="paper", yref="paper", x=0.5, y=0.5)
+                          xref="paper", yref="paper", x=0.5, y=0.5, font=dict(size=14))
+        fig.update_layout(height=400, width=600)
         return fig

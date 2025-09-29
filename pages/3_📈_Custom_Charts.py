@@ -70,9 +70,13 @@ def main():
             x_column = st.selectbox("Category Column", categorical_columns + numeric_columns)
             
             if chart_type == "Bar Chart":
+                # Include all numeric columns and converted categorical columns for y-axis
+                all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+                available_y_cols = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+                
                 y_column = st.selectbox(
                     "Value Column (optional)", 
-                    ["Count"] + numeric_columns,
+                    ["Count"] + available_y_cols,
                     help="Leave as 'Count' to count occurrences, or select a numeric column to aggregate"
                 )
                 if y_column == "Count":
@@ -97,8 +101,12 @@ def main():
             )
             
         elif chart_type == "Scatter Plot":
-            x_column = st.selectbox("X-axis", numeric_columns)
-            y_column = st.selectbox("Y-axis", numeric_columns)
+            # Include all available numeric columns (original + converted)
+            all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+            available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            
+            x_column = st.selectbox("X-axis", available_numeric)
+            y_column = st.selectbox("Y-axis", available_numeric)
             group_column = st.selectbox(
                 "Color By (optional)",
                 [None] + categorical_columns,
@@ -106,7 +114,10 @@ def main():
             )
             
         elif chart_type == "Box Plot":
-            x_column = st.selectbox("Numeric Column", numeric_columns)
+            all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+            available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            
+            x_column = st.selectbox("Numeric Column", available_numeric)
             y_column = None
             group_column = st.selectbox(
                 "Group By (optional)",
@@ -115,8 +126,11 @@ def main():
             )
             
         elif chart_type == "Line Chart":
+            all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+            available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            
             x_column = st.selectbox("X-axis", all_columns)
-            y_column = st.selectbox("Y-axis", numeric_columns)
+            y_column = st.selectbox("Y-axis", available_numeric)
             group_column = st.selectbox(
                 "Group By (optional)",
                 [None] + categorical_columns,

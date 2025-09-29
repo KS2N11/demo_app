@@ -10,6 +10,21 @@ from utils.chart_utils import create_eligibility_funnel, create_dropout_risk_cha
 from services.ai_summary import generate_summaries, test_ai_connection
 from utils.insights_engine import process_user_query
 
+# Helper functions to filter encoded columns
+def get_original_columns(df: pd.DataFrame):
+    """Get only original columns, filtering out encoded columns"""
+    return [col for col in df.columns if not col.startswith('_encoded_')]
+
+def get_original_dataframe(df: pd.DataFrame):
+    """Get dataframe with only original columns"""
+    original_cols = get_original_columns(df)
+    return df[original_cols] if original_cols else df
+
+def get_original_numeric_columns(df: pd.DataFrame):
+    """Get only original numeric columns"""
+    original_cols = get_original_columns(df)
+    return df[original_cols].select_dtypes(include=['number']).columns.tolist()
+
 # Page configuration
 st.set_page_config(
     page_title="Clinical Trial Analytics Demo",
@@ -44,13 +59,71 @@ def show_upload_section():
     """Display file upload section"""
     st.header("📁 Data Upload")
     
+    # Check if data is already loaded and show status
+    if st.session_state.data_uploaded and st.session_state.processed_data is not None:
+        df = st.session_state.processed_data
+        st.success(f"✅ Data already loaded: {len(df)} participants")
+        
+        # Show data preview - full width
+        st.subheader("📊 Dataset Preview")
+        try:
+            original_df = get_original_dataframe(df)
+            st.dataframe(original_df.head(10), use_container_width=True)
+            
+            # Show basic stats in a compact row
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Rows", f"{len(original_df):,}")
+            with col2:
+                st.metric("Columns", f"{len(original_df.columns)}")
+            with col3:
+                encoded_cols = len(df.columns) - len(original_df.columns)
+                if encoded_cols > 0:
+                    st.metric("Processed Features", f"+{encoded_cols}")
+                else:
+                    st.metric("Data Quality", "✅ Clean")
+            with col4:
+                st.metric("Data Type", "Clinical Trial")
+                
+        except Exception as e:
+            st.error(f"Error displaying preview: {e}")
+            st.dataframe(df.head(5), use_container_width=True)
+            
+        # Show encoding messages in dropdown below preview
+        if hasattr(st.session_state, 'last_processing_warnings') and st.session_state.last_processing_warnings:
+            with st.expander("🔧 Data Processing Details", expanded=False):
+                st.markdown("**Automatic data processing applied:**")
+                for warning in st.session_state.last_processing_warnings:
+                    st.info(f"ℹ️ {warning}")
+                st.markdown("*These enhancements improve analysis accuracy while preserving your original data for display.*")
+        
+        # Action buttons
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("🔄 Upload New Data", type="secondary"):
+                # Clear existing data
+                st.session_state.data_uploaded = False
+                st.session_state.processed_data = None
+                st.session_state.metrics = None
+                st.rerun()
+        
+        with col2:
+            if st.button("📊 Go to Dashboard", type="primary"):
+                st.switch_page("pages/1_📊_Dashboard.py")
+        
+        with col3:
+            st.info("💡 Navigate to Dashboard or Custom Charts to analyze your data")
+        
+        st.markdown("---")
+        st.markdown("### Or Upload Different Data:")
+    
     col1, col2 = st.columns([2, 1])
     
     with col1:
         uploaded_file = st.file_uploader(
             "Choose a CSV file with participant data",
             type="csv",
-            help="Upload a CSV file with participant data. Required columns: participant_id, age, location, meets_criteria, dropout_risk"
+            help="Upload any CSV file with clinical trial data. Our system handles various formats automatically."
         )
         
         if uploaded_file is not None:
@@ -67,13 +140,10 @@ def show_upload_section():
                     df = pd.read_csv(uploaded_file)
                     cleaned_df, warnings = clean_and_validate_data(df)
                     
-                    if warnings:
-                        for warning in warnings:
-                            st.warning(f"⚠️ {warning}")
-                    
                     st.session_state.processed_data = cleaned_df
                     st.session_state.metrics = compute_metrics(cleaned_df)
                     st.session_state.data_uploaded = True
+                    st.session_state.last_processing_warnings = warnings  # Store warnings for display
                     
                     st.success(f"✅ Successfully processed {len(cleaned_df)} participant records!")
                     
@@ -89,23 +159,25 @@ def show_upload_section():
         st.subheader("Sample Data")
         
         if st.button("📊 Load Sample Data", type="primary"):
-            sample_df = load_sample_data()
-            
-            if sample_df is not None:
-                try:
+            try:
+                sample_df = load_sample_data()
+                
+                if sample_df is not None:
                     cleaned_df, warnings = clean_and_validate_data(sample_df)
                     
                     st.session_state.processed_data = cleaned_df
                     st.session_state.metrics = compute_metrics(cleaned_df)
                     st.session_state.data_uploaded = True
+                    st.session_state.last_processing_warnings = warnings  # Store warnings for display
                     
                     st.success("✅ Sample data loaded successfully!")
-                    # Remove automatic rerun to prevent flickering
+                    st.rerun()  # Refresh to show the preview
                     
-                except Exception as e:
-                    st.error(f"❌ Error loading sample data: {str(e)}")
-            else:
-                st.error("❌ Sample data not found. Run 'python data/generate_data.py' first.")
+                else:
+                    st.error("❌ Sample data not found. Run 'python data/generate_data.py' first.")
+            except Exception as e:
+                st.error(f"❌ Error loading sample data: {str(e)}")
+                st.info("Please check if the sample data file exists or try uploading your own CSV file.")
         
         st.info("💡 **Tip:** Use sample data to explore features without uploading your own file.")
 
@@ -120,72 +192,51 @@ def show_dashboard():
     
     st.header("📊 Dashboard Overview")
     
-    # Dynamic Key Metrics Row
-    col1, col2, col3, col4 = st.columns(4)
+    # Debug: Show available metrics in development (remove in production)
+    # st.write("Debug - Available metrics:", list(metrics.keys()))
     
-    with col1:
-        st.metric(
-            "Total Participants", 
-            f"{metrics.get('total_participants', 0):,}",
-            help="Total number of participants in the dataset"
-        )
+    # Dynamic Key Metrics Row - automatically selects best 4 metrics
+    available_metrics = []
     
-    with col2:
-        if 'total_sites' in metrics and metrics['total_sites'] > 1:
-            st.metric(
-                f"Study Sites", 
-                f"{metrics.get('total_sites', 0):,}",
-                help="Number of different sites/locations"
-            )
-        else:
-            st.metric(
-                "Data Columns", 
-                f"{metrics.get('total_columns', 0):,}",
-                help="Number of data columns in the dataset"
-            )
+    # Always show total participants
+    available_metrics.append(('Total Participants', f"{metrics.get('total_participants', 0):,}", "Total number of participants in the dataset"))
     
-    with col3:
-        if 'eligibility_rate' in metrics:
-            eligibility_rate = metrics.get('eligibility_rate', 0)
-            st.metric(
-                "Eligibility Rate", 
-                f"{eligibility_rate:.1f}%",
-                help="Percentage of participants who meet criteria"
-            )
-        elif 'numeric_columns' in metrics:
-            st.metric(
-                "Numeric Columns", 
-                f"{metrics.get('numeric_columns', 0):,}",
-                help="Number of numeric data columns"
-            )
-        else:
-            missing_pct = metrics.get('missing_data_percent', 0)
-            st.metric(
-                "Data Completeness", 
-                f"{100-missing_pct:.1f}%",
-                help="Percentage of non-missing data"
-            )
+    # Conditionally add other meaningful metrics
+    if 'total_sites' in metrics and metrics.get('total_sites', 0) > 1:
+        available_metrics.append(('Study Sites', f"{metrics.get('total_sites', 0):,}", "Number of different sites/locations"))
     
-    with col4:
-        if 'high_risk_count' in metrics and metrics['high_risk_count'] > 0:
-            high_risk_count = metrics.get('high_risk_count', 0)
-            st.metric(
-                "High Risk Cases", 
-                f"{high_risk_count:,}",
-                help="Number of high-risk participants"
-            )
-        elif 'categorical_columns' in metrics:
-            st.metric(
-                "Categorical Columns", 
-                f"{metrics.get('categorical_columns', 0):,}",
-                help="Number of categorical data columns"
-            )
-        else:
-            st.metric(
-                "Duplicate Rows", 
-                f"{metrics.get('duplicate_rows', 0):,}",
-                help="Number of duplicate records found"
-            )
+    if 'eligibility_rate' in metrics:
+        eligibility_rate = metrics.get('eligibility_rate', 0)
+        available_metrics.append(('Eligibility Rate', f"{eligibility_rate:.1f}%", "Percentage of participants who meet criteria"))
+    
+    if 'high_risk_count' in metrics and metrics.get('high_risk_count', 0) > 0:
+        high_risk_count = metrics.get('high_risk_count', 0)
+        available_metrics.append(('High Risk Cases', f"{high_risk_count:,}", "Number of high-risk participants"))
+    
+    if 'avg_age' in metrics:
+        avg_age = metrics.get('avg_age', 0)
+        available_metrics.append(('Average Age', f"{avg_age:.1f} years", "Average participant age"))
+    elif 'age_categories' in metrics and metrics.get('age_categories'):
+        try:
+            top_age_category = max(metrics['age_categories'].items(), key=lambda x: x[1])
+            available_metrics.append(('Most Common Age Group', f"{top_age_category[0]} ({top_age_category[1]})", "Most frequent age category"))
+        except (ValueError, KeyError):
+            pass  # Skip if age_categories is empty or malformed
+    
+    # Add data quality metrics if space available
+    original_cols = get_original_columns(df)
+    if len(available_metrics) < 4:
+        available_metrics.append(('Data Columns', f"{len(original_cols):,}", "Number of data columns in the dataset"))
+    
+    if len(available_metrics) < 4:
+        numeric_cols = get_original_numeric_columns(df)
+        available_metrics.append(('Numeric Columns', f"{len(numeric_cols):,}", "Number of numeric data columns"))
+    
+    # Display the top 4 metrics
+    cols = st.columns(min(4, len(available_metrics)))
+    for i, (label, value, help_text) in enumerate(available_metrics[:4]):
+        with cols[i]:
+            st.metric(label, value, help=help_text)
     
     st.markdown("---")
     
@@ -433,13 +484,27 @@ def show_settings():
             st.write(f"Missing values: {missing_pct:.1f}%")
             st.write(f"Duplicates: {df.duplicated().sum()}")
             
-        st.markdown("**Column Details:**")
-        col_info = pd.DataFrame({
-            'Column': df.columns,
-            'Type': df.dtypes,
-            'Non-null Count': df.count(),
-            'Missing %': ((len(df) - df.count()) / len(df) * 100).round(1)
-        })
+        st.markdown("**Data Quality Overview:**")
+        # Get only original columns for display
+        original_df = get_original_dataframe(df)
+        
+        # Create user-friendly column info with better names
+        col_info_data = []
+        for col in original_df.columns:
+            # Create user-friendly column names
+            friendly_name = col.replace('_', ' ').title()
+            if 'id' in col.lower():
+                friendly_name = friendly_name.replace('Id', 'ID')
+            
+            col_info_data.append({
+                'Column Name': friendly_name,
+                'Data Type': str(original_df[col].dtype).replace('object', 'Text').replace('int64', 'Number').replace('float64', 'Decimal'),
+                'Non-null Count': original_df[col].count(),
+                'Missing %': ((len(original_df) - original_df[col].count()) / len(original_df) * 100).round(1),
+                'Sample Values': ', '.join(str(x) for x in original_df[col].dropna().head(3).values)
+            })
+        
+        col_info = pd.DataFrame(col_info_data)
         st.dataframe(col_info, use_container_width=True)
     else:
         st.info("Upload data to see dataset information.")
@@ -477,40 +542,47 @@ def load_sample_data():
         sample_path = "data/participants_sample.csv"
         if os.path.exists(sample_path):
             df = pd.read_csv(sample_path)
-            cleaned_df, warnings = clean_and_validate_data(df)
-            return cleaned_df
+            return df  # Return raw data, let the caller handle cleaning
         else:
             # Generate sample data if file doesn't exist
-            from data.generate_data import generate_synthetic_data
-            df = generate_synthetic_data(200)
-            cleaned_df, warnings = clean_and_validate_data(df)
-            return cleaned_df
+            try:
+                from data.generate_data import generate_synthetic_data
+                df = generate_synthetic_data(200)
+                return df  # Return raw data, let the caller handle cleaning
+            except ImportError:
+                # If generate_data module doesn't exist, create minimal sample
+                sample_data = {
+                    'participant_id': [f'P{i:03d}' for i in range(1, 11)],
+                    'age': [25, 35, 45, 55, 30, 40, 28, 60, 33, 50],
+                    'gender': ['Male', 'Female', 'Male', 'Female', 'Male', 'Female', 'Male', 'Female', 'Male', 'Female'],
+                    'location': ['Site A', 'Site B', 'Site A', 'Site C', 'Site B', 'Site A', 'Site C', 'Site B', 'Site A', 'Site C'],
+                    'meets_criteria': [True, True, False, True, True, False, True, True, False, True],
+                    'dropout_risk': ['Low', 'Medium', 'High', 'Low', 'Medium', 'High', 'Low', 'Medium', 'High', 'Low']
+                }
+                return pd.DataFrame(sample_data)
     except Exception as e:
-        st.error(f"Error loading sample data: {e}")
         return None
 
-def show_upload_section():
-    """Display file upload section"""
+def show_upload_section_legacy():
+    """Legacy upload section - kept for compatibility"""
     st.header("📁 Upload Participant Data")
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
         st.markdown("""
-        ### Expected CSV Format:
-        - `participant_id`: Unique identifier
-        - `age`: Participant age
-        - `location`: Site/location
-        - `meets_criteria`: Boolean (True/False or 1/0)
-        - `dropout_risk`: Risk level (High/Medium/Low or numeric)
-        - Additional columns are welcome!
+        ### 📋 Upload Instructions:
+        - Upload any CSV file with clinical trial data
+        - Our system automatically detects and processes various formats
+        - Participant IDs will be created if not present
+        - Categorical data is intelligently converted for analysis
         """)
     
     with col2:
         uploaded_file = st.file_uploader(
             "Choose a CSV file",
             type=['csv'],
-            help="Upload your clinical trial participant data"
+            help="Upload your clinical trial data - any format accepted"
         )
     
     if uploaded_file is not None:
@@ -544,117 +616,6 @@ def show_upload_section():
         except Exception as e:
             st.error(f"Error processing file: {e}")
             st.info("Please check your file format and try again.")
-
-def show_dashboard():
-    """Display the main dashboard"""
-    st.header("📊 Clinical Trial Dashboard")
-    
-    df = st.session_state.processed_data
-    metrics = st.session_state.metrics
-    
-    # Key Metrics Row
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            "Total Participants",
-            f"{metrics['total_participants']:,}",
-            delta=None
-        )
-    
-    with col2:
-        st.metric(
-            "Eligibility Rate",
-            f"{metrics['eligibility_rate']:.1f}%",
-            delta=f"{metrics['eligibility_rate'] - 75:.1f}% vs target"
-        )
-    
-    with col3:
-        st.metric(
-            "High Dropout Risk",
-            f"{metrics['high_risk_count']:,}",
-            delta=f"{metrics['high_risk_percentage']:.1f}% of total"
-        )
-    
-    with col4:
-        st.metric(
-            "Active Sites",
-            f"{metrics['unique_sites']:,}",
-            delta=None
-        )
-    
-    st.markdown("---")
-    
-    # Charts Section
-    st.subheader("📈 Visual Analytics")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### Eligibility Funnel")
-        funnel_fig = create_eligibility_funnel(df)
-        st.plotly_chart(funnel_fig, use_container_width=True)
-    
-    with col2:
-        st.markdown("#### Dropout Risk Distribution")
-        risk_fig = create_dropout_risk_chart(df)
-        st.plotly_chart(risk_fig, use_container_width=True)
-    
-    # Site Distribution
-    st.markdown("#### Site Distribution")
-    site_fig = create_site_distribution(df)
-    st.plotly_chart(site_fig, use_container_width=True)
-    
-    # AI Summaries
-    st.markdown("---")
-    st.subheader("🤖 AI-Generated Insights")
-    
-    if st.session_state.ai_summaries is None:
-        with st.spinner("Generating AI summaries..."):
-            summaries = generate_summaries(df, metrics)
-            st.session_state.ai_summaries = summaries
-    
-    summaries = st.session_state.ai_summaries
-    
-    tab1, tab2, tab3 = st.tabs(["Executive Summary", "Clinical Insights", "Marketing Report"])
-    
-    with tab1:
-        st.markdown(summaries.get('executive', 'Summary not available'))
-    
-    with tab2:
-        st.markdown(summaries.get('clinical', 'Summary not available'))
-    
-    with tab3:
-        st.markdown(summaries.get('marketing', 'Summary not available'))
-    
-    # Interactive Q&A Section
-    st.markdown("---")
-    st.subheader("💬 Ask Questions About Your Data")
-    
-    user_query = st.text_input(
-        "Ask a question:",
-        placeholder="e.g., 'Show dropout risk by age group', 'Which site has the most eligible participants?'",
-        help="Ask any question about your data and get instant insights!"
-    )
-    
-    if user_query:
-        with st.spinner("Analyzing your question..."):
-            try:
-                result = process_user_query(user_query, df)
-                
-                if result['type'] == 'chart':
-                    st.plotly_chart(result['content'], use_container_width=True)
-                elif result['type'] == 'text':
-                    st.markdown(f"**Answer:** {result['content']}")
-                elif result['type'] == 'data':
-                    st.dataframe(result['content'])
-                
-                if 'explanation' in result:
-                    st.info(f"💡 **Insight:** {result['explanation']}")
-                    
-            except Exception as e:
-                st.error(f"Error processing query: {e}")
-                st.info("Try rephrasing your question or ask something simpler.")
 
 if __name__ == "__main__":
     main()
