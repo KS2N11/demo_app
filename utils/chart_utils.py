@@ -19,6 +19,19 @@ def get_original_categorical_columns(df: pd.DataFrame) -> List[str]:
     original_cols = get_original_columns(df)
     return df[original_cols].select_dtypes(include=['object', 'category']).columns.tolist()
 
+def format_display_name(name: str) -> str:
+    """Convert any name to user-friendly format without underscores"""
+    if pd.isna(name) or name is None:
+        return str(name)
+    
+    formatted = str(name).replace('_', ' ').title()
+    formatted = formatted.replace(' Id', ' ID')
+    formatted = formatted.replace(' Bmi', ' BMI')
+    formatted = formatted.replace(' Dob', ' DOB')
+    formatted = formatted.replace(' Url', ' URL')
+    formatted = formatted.replace(' Api', ' API')
+    return formatted
+
 def get_available_charts(df: pd.DataFrame) -> List[str]:
     """
     Determine which charts can be created based on available data
@@ -787,16 +800,16 @@ def create_custom_chart(df: pd.DataFrame, chart_type: str, x_col: str, y_col: st
                 ))
         
         # Update layout
-        title = f"{chart_type.title()} Chart: {x_col}"
+        title = f"{chart_type.title()} Chart: {format_display_name(x_col)}"
         if y_col:
-            title += f" vs {y_col}"
+            title += f" vs {format_display_name(y_col)}"
         if group_col:
-            title += f" by {group_col}"
+            title += f" by {format_display_name(group_col)}"
             
         fig.update_layout(
             title=title,
-            xaxis_title=x_col.replace('_', ' ').title(),
-            yaxis_title=y_col.replace('_', ' ').title() if y_col else 'Count',
+            xaxis_title=format_display_name(x_col),
+            yaxis_title=format_display_name(y_col) if y_col else 'Count',
             height=400,
             margin=dict(l=80, r=80, t=100, b=80),
             # Prevent label overlap
