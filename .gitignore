@@ -1,4 +1,4 @@
 /.env
 instructions.md
-.venv/
-__pycache__/
+venv/
+*/__pycache__/*
