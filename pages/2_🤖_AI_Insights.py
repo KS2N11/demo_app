@@ -28,28 +28,28 @@ def main():
     metrics = st.session_state.get('metrics', {})
     
     # Test AI connection
-    st.header("🔗 AI Service Status")
+    # st.header("🔗 AI Service Status")
     
-    col1, col2 = st.columns([3, 1])
+    # col1, col2 = st.columns([3, 1])
     
-    with col1:
-        if st.button("🔍 Test AI Connection", type="secondary"):
-            with st.spinner("Testing AI service connection..."):
-                status = test_ai_connection()
+    # with col1:
+    #     if st.button("🔍 Test AI Connection", type="secondary"):
+    #         with st.spinner("Testing AI service connection..."):
+    #             status = test_ai_connection()
                 
-                if status['connected']:
-                    st.success(f"✅ AI service connected successfully! Using {status['service_type'].upper()} API")
-                else:
-                    st.error(f"❌ AI service connection failed: {status.get('error', 'Unknown error')}")
-                    st.info("💡 AI features will use template responses when service is unavailable.")
+    #             if status['connected']:
+    #                 st.success(f"✅ AI service connected successfully! Using {status['service_type'].upper()} API")
+    #             else:
+    #                 st.error(f"❌ AI service connection failed: {status.get('error', 'Unknown error')}")
+    #                 st.info("💡 AI features will use template responses when service is unavailable.")
     
-    with col2:
-        # Show current AI status
-        if 'ai_status' in st.session_state:
-            if st.session_state.ai_status.get('connected'):
-                st.success("✅ Connected")
-            else:
-                st.warning("⚠️ Unavailable")
+    # with col2:
+    #     # Show current AI status
+    #     if 'ai_status' in st.session_state:
+    #         if st.session_state.ai_status.get('connected'):
+    #             st.success("✅ Connected")
+    #         else:
+    #             st.warning("⚠️ Unavailable")
     
     st.markdown("---")
     
@@ -75,48 +75,95 @@ def main():
         with tab1:
             st.subheader("Executive Summary")
             st.markdown("*For leadership and stakeholder communication*")
-            st.markdown(summaries.get('executive', 'Summary not available'))
+            executive_summary = summaries.get('executive', 'Summary not available')
+            st.markdown(executive_summary)
             
-            if st.button("🔄 Regenerate Executive Summary"):
+            # Copy functionality
+            # st.code(executive_summary, language=None)
+            
+            if 'feedback_exec' not in st.session_state:
+                st.session_state.feedback_exec = ""
+            
+            feedback_text = st.text_area("Provide feedback for improvement (optional):", 
+                                        key="feedback_input_exec", 
+                                        value=st.session_state.feedback_exec,
+                                        height=70)
+            
+            if st.button("🔄 Regenerate Executive Summary", key="regen_exec"):
                 with st.spinner("Regenerating executive summary..."):
                     data_summary = get_data_summary(df)
-                    new_summaries = generate_summaries(data_summary, metrics)
+                    new_summaries = generate_summaries(data_summary, metrics, feedback=feedback_text if feedback_text else None)
                     st.session_state.ai_summaries['executive'] = new_summaries.get('executive')
+                    st.session_state.feedback_exec = ""
                 st.rerun()
         
         with tab2:
             st.subheader("Clinical Summary")
             st.markdown("*For clinical teams and medical professionals*")
-            st.markdown(summaries.get('clinical', 'Summary not available'))
+            clinical_summary = summaries.get('clinical', 'Summary not available')
+            st.markdown(clinical_summary)
             
-            if st.button("🔄 Regenerate Clinical Summary"):
+            # Copy functionality
+            # st.code(clinical_summary, language=None)
+            
+            if 'feedback_clin' not in st.session_state:
+                st.session_state.feedback_clin = ""
+            
+            feedback_text = st.text_area("Provide feedback for improvement (optional):", 
+                                        key="feedback_input_clin", 
+                                        value=st.session_state.feedback_clin,
+                                        height=70)
+            
+            if st.button("🔄 Regenerate Clinical Summary", key="regen_clin"):
                 with st.spinner("Regenerating clinical summary..."):
                     data_summary = get_data_summary(df)
-                    new_summaries = generate_summaries(data_summary, metrics)
+                    new_summaries = generate_summaries(data_summary, metrics, feedback=feedback_text if feedback_text else None)
                     st.session_state.ai_summaries['clinical'] = new_summaries.get('clinical')
+                    st.session_state.feedback_clin = ""
                 st.rerun()
         
         with tab3:
             st.subheader("Marketing Summary")
-            st.markdown("*For recruitment and marketing teams*")
-            st.markdown(summaries.get('marketing', 'Summary not available'))
+            st.markdown("*For marketing and communications teams*")
+            marketing_summary = summaries.get('marketing', 'Summary not available')
+            st.markdown(marketing_summary)
             
-            if st.button("🔄 Regenerate Marketing Summary"):
+            # Copy functionality
+            # st.code(marketing_summary, language=None)
+            
+            if 'feedback_mark' not in st.session_state:
+                st.session_state.feedback_mark = ""
+            
+            feedback_text = st.text_area("Provide feedback for improvement (optional):", 
+                                        key="feedback_input_mark", 
+                                        value=st.session_state.feedback_mark,
+                                        height=70)
+            
+            if st.button("🔄 Regenerate Marketing Summary", key="regen_mark"):
                 with st.spinner("Regenerating marketing summary..."):
                     data_summary = get_data_summary(df)
-                    new_summaries = generate_summaries(data_summary, metrics)
+                    new_summaries = generate_summaries(data_summary, metrics, feedback=feedback_text if feedback_text else None)
                     st.session_state.ai_summaries['marketing'] = new_summaries.get('marketing')
+                    st.session_state.feedback_mark = ""
                 st.rerun()
         
         # Reset summaries option
         st.markdown("---")
+        if 'feedback_all' not in st.session_state:
+            st.session_state.feedback_all = ""
+        
+        feedback_text = st.text_area("Provide feedback for all summaries (optional):",
+                                    key="feedback_input_all",
+                                    value=st.session_state.feedback_all,
+                                    height=70)
+        
         if st.button("🔄 Regenerate All Summaries"):
             with st.spinner("Regenerating all AI summaries..."):
                 data_summary = get_data_summary(df)
-                st.session_state.ai_summaries = generate_summaries(data_summary, metrics)
+                st.session_state.ai_summaries = generate_summaries(data_summary, metrics, feedback=feedback_text if feedback_text else None)
+                st.session_state.feedback_all = ""
             st.success("✅ All summaries regenerated!")
             st.rerun()
-    
     st.markdown("---")
     
     # Interactive AI Q&A
