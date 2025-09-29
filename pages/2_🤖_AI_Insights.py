@@ -178,7 +178,7 @@ def main():
     query = st.text_area(
         "Ask a question about your clinical trial data:",
         placeholder="e.g., 'What are the main risk factors for participant dropout?' or 'Which sites are performing best and why?'",
-        height=100,
+        height=70,
         help="Ask complex questions that require analysis and interpretation. AI will provide detailed insights based on your data."
     )
     

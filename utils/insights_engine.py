@@ -26,15 +26,17 @@ def process_user_query(query: str, df: pd.DataFrame) -> Dict[str, Any]:
         query = query.strip().lower()
         
         # First, try pattern matching for common queries
-        pattern_result = match_common_patterns(query, df)
-        if pattern_result:
-            return pattern_result
+        # pattern_result = match_common_patterns(query, df)
+        # if pattern_result:
+        #     print("Pattern matched result:",pattern_result)
+        #     return pattern_result
         
         # If no pattern match, try AI-powered analysis
         ai_result = analyze_query_with_ai(query, df)
+        print("AI analysis result:",ai_result)
         if ai_result:
             return ai_result
-        
+         
         # Fallback to simple text response
         return {
             'type': 'text',
@@ -138,16 +140,55 @@ def analyze_query_with_ai(query: str, df: pd.DataFrame) -> Dict[str, Any]:
         prompt = QUERY_ANALYSIS_PROMPT.format(
             query=query,
             columns=columns,
-            sample_data=sample_data
+            data_summary=sample_data
         )
         
-        response = call_llm(client, model, prompt, max_tokens=300)
+        # Fix: Create proper messages structure
+        messages = [
+            {"role": "system", "content": "You are a data analysis assistant."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        response = call_llm(client, model, messages, max_tokens=300)
+        
+        print(f"AI Response: {response}")
+        
+        if not response:
+            return None
         
         try:
+            # Strip markdown code blocks if present
+            cleaned_response = response.strip()
+            if cleaned_response.startswith('```'):
+                # Remove ```json or ``` at start and ``` at end
+                lines = cleaned_response.split('\n')
+                if lines[0].startswith('```'):
+                    lines = lines[1:]  # Remove first line
+                if lines[-1].strip() == '```':
+                    lines = lines[:-1]  # Remove last line
+                cleaned_response = '\n'.join(lines)
+            
+            print(f"Cleaned response: {cleaned_response}")
+            
             # Try to parse JSON response
-            analysis = json.loads(response)
-            return execute_ai_analysis(analysis, df)
-        except json.JSONDecodeError:
+            analysis = json.loads(cleaned_response)
+            print(f"Parsed analysis: {analysis}")
+            
+            result = execute_ai_analysis(analysis, df)
+            print(f"Execution result: {result}")
+            
+            if result:
+                return result
+            else:
+                print("execute_ai_analysis returned None")
+                return {
+                    'type': 'text',
+                    'content': analysis.get('explanation', 'Analysis completed.'),
+                    'explanation': "Based on your query and the available data."
+                }
+                
+        except json.JSONDecodeError as je:
+            print(f"JSON decode error: {je}")
             # If not JSON, treat as text explanation
             return {
                 'type': 'text',
@@ -156,7 +197,9 @@ def analyze_query_with_ai(query: str, df: pd.DataFrame) -> Dict[str, Any]:
             }
         
     except Exception as e:
-        st.error(f"Error in AI query analysis: {e}")
+        print(f"Exception in AI query analysis: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def execute_ai_analysis(analysis: Dict[str, Any], df: pd.DataFrame) -> Dict[str, Any]:
@@ -172,54 +215,163 @@ def execute_ai_analysis(analysis: Dict[str, Any], df: pd.DataFrame) -> Dict[str,
     """
     try:
         analysis_type = analysis.get('analysis_type', 'summary')
+        print(f"Analysis type: {analysis_type}")
         
-        if analysis_type == 'chart':
+        # Handle chart and comparison types
+        if analysis_type in ['chart', 'comparison']:
             chart_type = analysis.get('chart_type', 'bar')
-            groupby_cols = analysis.get('groupby_columns', [])
+            x_col = analysis.get('x_column')
+            y_col = analysis.get('y_column')
+            group_col = analysis.get('group_column')
+            aggregation = analysis.get('aggregation')
             
-            if groupby_cols and len(groupby_cols) > 0:
-                x_col = groupby_cols[0]
-                y_col = groupby_cols[1] if len(groupby_cols) > 1 else None
-                
-                chart = create_custom_chart(df, chart_type, x_col, y_col)
+            # Convert "null" strings to None
+            if x_col == 'null':
+                x_col = None
+            if y_col == 'null':
+                y_col = None
+            if group_col == 'null':
+                group_col = None
+            
+            print(f"Chart - x_col: {x_col}, y_col: {y_col}, group_col: {group_col}, aggregation: {aggregation}")
+            
+            # Validate x_col exists
+            if x_col and x_col in df.columns:
+                # If y_col doesn't exist or is for counting
+                if not y_col or y_col not in df.columns:
+                    # Create aggregated data
+                    if aggregation == 'count':
+                        agg_df = df.groupby(x_col).size().reset_index(name='count')
+                        chart = create_custom_chart(agg_df, chart_type, x_col, 'count')
+                    else:
+                        # Use the first numeric column if available
+                        numeric_cols = df.select_dtypes(include=['number']).columns
+                        if len(numeric_cols) > 0:
+                            y_col = numeric_cols[0]
+                            chart = create_custom_chart(df, chart_type, x_col, y_col)
+                        else:
+                            agg_df = df.groupby(x_col).size().reset_index(name='count')
+                            chart = create_custom_chart(agg_df, chart_type, x_col, 'count')
+                elif y_col in df.columns:
+                    # If aggregation specified, aggregate first
+                    if aggregation and aggregation != 'null':
+                        agg_df = df.groupby(x_col)[y_col].agg(aggregation).reset_index()
+                        agg_df.columns = [x_col, f'{y_col}_{aggregation}']
+                        chart = create_custom_chart(agg_df, chart_type, x_col, f'{y_col}_{aggregation}')
+                    else:
+                        chart = create_custom_chart(df, chart_type, x_col, y_col)
+                else:
+                    print(f"Column {y_col} not found")
+                    return None
                 
                 return {
                     'type': 'chart',
                     'content': chart,
-                    'explanation': analysis.get('explanation', 'Custom chart based on your query.')
+                    'explanation': analysis.get('explanation', analysis.get('title', 'Custom chart based on your query.'))
                 }
+            else:
+                print(f"Column {x_col} not found in dataframe")
+                return None
         
         elif analysis_type == 'table':
-            # Create filtered/grouped table
-            groupby_cols = analysis.get('groupby_columns', [])
-            agg_funcs = analysis.get('aggregate_functions', {})
+            x_col = analysis.get('x_column')
+            y_col = analysis.get('y_column')
+            group_col = analysis.get('group_column')
+            aggregation = analysis.get('aggregation')
             
-            if groupby_cols:
-                if agg_funcs:
-                    result_df = df.groupby(groupby_cols).agg(agg_funcs).reset_index()
+            # Convert "null" strings to None
+            if x_col == 'null':
+                x_col = None
+            if y_col == 'null':
+                y_col = None
+            if group_col == 'null':
+                group_col = None
+            
+            # Determine grouping column
+            groupby_col = x_col or group_col
+            
+            print(f"Table - groupby_col: {groupby_col}, y_col: {y_col}, aggregation: {aggregation}")
+            
+            if groupby_col and groupby_col in df.columns:
+                if aggregation and aggregation != 'null' and y_col and y_col in df.columns:
+                    # Aggregate with specific function
+                    result_df = df.groupby(groupby_col)[y_col].agg(aggregation).reset_index()
+                    result_df.columns = [groupby_col, f'{y_col}_{aggregation}']
+                elif aggregation == 'count' or not y_col:
+                    # Simple count
+                    result_df = df.groupby(groupby_col).size().reset_index(name='count')
                 else:
-                    result_df = df.groupby(groupby_cols).size().reset_index(name='count')
+                    # Multiple aggregations or just grouping
+                    result_df = df.groupby(groupby_col).size().reset_index(name='count')
+                
+                print(f"Result dataframe shape: {result_df.shape}")
                 
                 return {
-                    'type': 'data',
+                    'type': 'table',
                     'content': result_df,
-                    'explanation': analysis.get('explanation', 'Grouped data based on your query.')
+                    'explanation': analysis.get('explanation', analysis.get('title', 'Grouped data based on your query.'))
                 }
+            else:
+                print(f"Column {groupby_col} not found in dataframe")
+                return None
         
-        # Default to summary
+        elif analysis_type == 'summary':
+            # Check if we have data parameters that we can use for analysis
+            y_col = analysis.get('y_column')
+            group_col = analysis.get('group_column')
+            aggregation = analysis.get('aggregation')
+            
+            if y_col and y_col != 'null' and y_col in df.columns:
+                # If we have valid columns for analysis, create a data summary
+                if group_col and group_col != 'null' and group_col in df.columns:
+                    # Group by the specified column
+                    if aggregation and aggregation != 'null':
+                        result_df = df.groupby(group_col)[y_col].agg(aggregation).reset_index()
+                        result_df.columns = [group_col, f'{y_col}_{aggregation}']
+                    else:
+                        result_df = df.groupby(group_col)[y_col].value_counts().reset_index(name='count')
+                    
+                    return {
+                        'type': 'table',
+                        'content': result_df,
+                        'explanation': analysis.get('explanation', analysis.get('title', 'Analysis completed.')),
+                        'title': analysis.get('title')
+                    }
+                else:
+                    # Just summarize the y_column
+                    if aggregation and aggregation != 'null':
+                        summary_data = df[y_col].agg(aggregation)
+                    else:
+                        summary_data = df[y_col].value_counts().reset_index()
+                        summary_data.columns = [y_col, 'count']
+                    
+                    return {
+                        'type': 'table',
+                        'content': summary_data,
+                        'explanation': analysis.get('explanation', analysis.get('title', 'Analysis completed.')),
+                        'title': analysis.get('title')
+                    }
+            
+            # If no valid data parameters, return text summary
+            return {
+                'type': 'text',
+                'content': analysis.get('explanation', analysis.get('title', 'Analysis completed.')),
+                'explanation': "Based on your query and the available data."
+            }
+        
+        # Fallback
+        print("Falling back to summary")
         return {
             'type': 'text',
-            'content': analysis.get('explanation', 'Analysis completed.'),
+            'content': analysis.get('explanation', analysis.get('title', 'Analysis completed.')),
             'explanation': "Based on your query and the available data."
         }
         
     except Exception as e:
-        return {
-            'type': 'text',
-            'content': f"Error executing analysis: {e}",
-            'explanation': "Please try a simpler question."
-        }
-
+        print(f"Error in execute_ai_analysis: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 # Specific analysis functions
 def create_age_risk_analysis(df: pd.DataFrame) -> Dict[str, Any]:
     """Create age vs dropout risk analysis"""
@@ -255,7 +407,7 @@ def create_top_sites_analysis(df: pd.DataFrame) -> Dict[str, Any]:
         top_sites = site_metrics.sort_values('eligibility_rate', ascending=False)
         
         return {
-            'type': 'data',
+            'type': 'table',
             'content': top_sites,
             'explanation': f"Top performing site: {top_sites.index[0]} with {top_sites.iloc[0]['eligibility_rate']:.1f}% eligibility rate."
         }
@@ -356,7 +508,7 @@ def create_comparison_analysis(df: pd.DataFrame, query: str) -> Dict[str, Any]:
             site_comparison['Risk_Rate'] = (site_comparison['High_Risk'] / site_comparison['Total']) * 100
             
             return {
-                'type': 'data',
+                'type': 'table',
                 'content': site_comparison,
                 'explanation': "Comparison of sites showing participant counts, eligibility rates, and risk levels."
             }
@@ -370,7 +522,7 @@ def create_comparison_analysis(df: pd.DataFrame, query: str) -> Dict[str, Any]:
             })
             
             return {
-                'type': 'data',
+                'type': 'table',
                 'content': age_comparison,
                 'explanation': "Comparison across age groups showing eligibility and risk patterns."
             }
@@ -420,7 +572,7 @@ def create_site_overview(df: pd.DataFrame) -> Dict[str, Any]:
         site_overview.columns = ['Total_Participants', 'Eligible_Count', 'Eligibility_Rate', 'High_Risk_Count', 'Avg_Age']
         
         return {
-            'type': 'data',
+            'type': 'table',
             'content': site_overview,
             'explanation': "Complete overview of all sites showing key performance metrics."
         }
@@ -497,7 +649,7 @@ def create_risk_sites_analysis(df: pd.DataFrame) -> Dict[str, Any]:
         highest_risk_rate = site_risk.iloc[0]['risk_rate']
         
         return {
-            'type': 'data',
+            'type': 'table',
             'content': site_risk,
             'explanation': f"Site with highest risk: {highest_risk_site} ({highest_risk_rate:.1f}% high-risk participants)"
         }
