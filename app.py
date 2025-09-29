@@ -25,6 +25,29 @@ def get_original_numeric_columns(df: pd.DataFrame):
     original_cols = get_original_columns(df)
     return df[original_cols].select_dtypes(include=['number']).columns.tolist()
 
+def format_display_name(name: str) -> str:
+    """Convert any name to user-friendly format without underscores"""
+    if pd.isna(name) or name is None:
+        return str(name)
+    
+    # Convert to string and handle various cases
+    formatted = str(name)
+    
+    # Replace underscores with spaces
+    formatted = formatted.replace('_', ' ')
+    
+    # Title case for better readability
+    formatted = formatted.title()
+    
+    # Fix common abbreviations
+    formatted = formatted.replace(' Id', ' ID')
+    formatted = formatted.replace(' Bmi', ' BMI')
+    formatted = formatted.replace(' Dob', ' DOB')
+    formatted = formatted.replace(' Url', ' URL')
+    formatted = formatted.replace(' Api', ' API')
+    
+    return formatted
+
 # Page configuration
 st.set_page_config(
     page_title="Clinical Trial Analytics Demo",
@@ -64,11 +87,16 @@ def show_upload_section():
         df = st.session_state.processed_data
         st.success(f"✅ Data already loaded: {len(df)} participants")
         
-        # Show data preview - full width
+        # Show data preview - full width with formatted column names
         st.subheader("📊 Dataset Preview")
         try:
             original_df = get_original_dataframe(df)
-            st.dataframe(original_df.head(10), use_container_width=True)
+            
+            # Create display version with formatted column names
+            display_df = original_df.copy()
+            display_df.columns = [format_display_name(col) for col in display_df.columns]
+            
+            st.dataframe(display_df.head(10), use_container_width=True)
             
             # Show basic stats in a compact row
             col1, col2, col3, col4 = st.columns(4)
@@ -488,24 +516,27 @@ def show_settings():
         # Get only original columns for display
         original_df = get_original_dataframe(df)
         
-        # Create user-friendly column info with better names
+        # Create user-friendly column info - only show columns with missing values
         col_info_data = []
         for col in original_df.columns:
-            # Create user-friendly column names
-            friendly_name = col.replace('_', ' ').title()
-            if 'id' in col.lower():
-                friendly_name = friendly_name.replace('Id', 'ID')
+            missing_count = len(original_df) - original_df[col].count()
+            missing_pct = (missing_count / len(original_df) * 100).round(1)
             
-            col_info_data.append({
-                'Column Name': friendly_name,
-                'Data Type': str(original_df[col].dtype).replace('object', 'Text').replace('int64', 'Number').replace('float64', 'Decimal'),
-                'Non-null Count': original_df[col].count(),
-                'Missing %': ((len(original_df) - original_df[col].count()) / len(original_df) * 100).round(1),
-                'Sample Values': ', '.join(str(x) for x in original_df[col].dropna().head(3).values)
-            })
+            # Only include columns that have missing values
+            if missing_count > 0:
+                col_info_data.append({
+                    'Column Name': format_display_name(col),
+                    'Data Type': str(original_df[col].dtype).replace('object', 'Text').replace('int64', 'Number').replace('float64', 'Decimal'),
+                    'Missing Count': missing_count,
+                    'Missing %': missing_pct,
+                    'Sample Values': ', '.join(str(x) for x in original_df[col].dropna().head(3).values)
+                })
         
-        col_info = pd.DataFrame(col_info_data)
-        st.dataframe(col_info, use_container_width=True)
+        if col_info_data:
+            col_info = pd.DataFrame(col_info_data)
+            st.dataframe(col_info, use_container_width=True)
+        else:
+            st.success("✅ **Excellent data quality!** No missing values found in any column.")
     else:
         st.info("Upload data to see dataset information.")
     

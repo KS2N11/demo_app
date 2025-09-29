@@ -19,6 +19,20 @@ def get_original_categorical_columns(df):
     original_cols = get_original_columns(df)
     return df[original_cols].select_dtypes(include=['object', 'category']).columns.tolist()
 
+def format_display_name(name: str) -> str:
+    """Convert any name to user-friendly format without underscores"""
+    if pd.isna(name) or name is None:
+        return str(name)
+    
+    formatted = str(name).replace('_', ' ').title()
+    formatted = formatted.replace(' Id', ' ID')
+    formatted = formatted.replace(' Bmi', ' BMI')
+    return formatted
+
+def create_column_mapping(columns):
+    """Create mapping between display names and actual column names"""
+    return {format_display_name(col): col for col in columns}
+
 # Page configuration
 st.set_page_config(
     page_title="Custom Charts - Clinical Trial Analytics",
@@ -55,10 +69,15 @@ def main():
         
         st.markdown("---")
         
-        # Column selection based on chart type - only show original columns
+        # Column selection based on chart type - only show original columns with formatted names
         numeric_columns = get_original_numeric_columns(df)
         categorical_columns = get_original_categorical_columns(df)
         all_columns = get_original_columns(df)
+        
+        # Create display mappings
+        numeric_mapping = create_column_mapping(numeric_columns)
+        categorical_mapping = create_column_mapping(categorical_columns)
+        all_mapping = create_column_mapping(all_columns)
         
         if chart_type == "Correlation Heatmap":
             st.info("Correlation heatmap will use all numeric columns automatically.")
@@ -67,75 +86,112 @@ def main():
             group_column = None
             
         elif chart_type in ["Bar Chart", "Pie Chart"]:
-            x_column = st.selectbox("Category Column", categorical_columns + numeric_columns)
+            # Use formatted names in dropdown but map back to original
+            display_options = list(categorical_mapping.keys()) + list(numeric_mapping.keys())
+            x_column_display = st.selectbox("Category Column", display_options)
+            
+            # Map back to original column name
+            x_column = categorical_mapping.get(x_column_display) or numeric_mapping.get(x_column_display)
             
             if chart_type == "Bar Chart":
                 # Include all numeric columns and converted categorical columns for y-axis
                 all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
                 available_y_cols = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+                y_mapping = create_column_mapping(available_y_cols)
                 
-                y_column = st.selectbox(
+                y_options = ["Count"] + list(y_mapping.keys())
+                y_column_display = st.selectbox(
                     "Value Column (optional)", 
-                    ["Count"] + available_y_cols,
+                    y_options,
                     help="Leave as 'Count' to count occurrences, or select a numeric column to aggregate"
                 )
-                if y_column == "Count":
-                    y_column = None
+                y_column = y_mapping.get(y_column_display) if y_column_display != "Count" else None
                 
-                group_column = st.selectbox(
+                group_options = ["None"] + list(categorical_mapping.keys())
+                group_column_display = st.selectbox(
                     "Group By (optional)",
-                    [None] + categorical_columns,
+                    group_options,
                     help="Optional: Group bars by another categorical variable"
                 )
+                group_column = categorical_mapping.get(group_column_display) if group_column_display != "None" else None
             else:
                 y_column = None
                 group_column = None
                 
         elif chart_type == "Histogram":
-            x_column = st.selectbox("Numeric Column", numeric_columns)
+            x_options = list(numeric_mapping.keys())
+            x_column_display = st.selectbox("Numeric Column", x_options)
+            x_column = numeric_mapping.get(x_column_display)
             y_column = None
-            group_column = st.selectbox(
+            
+            group_options = ["None"] + list(categorical_mapping.keys())
+            group_column_display = st.selectbox(
                 "Color By (optional)",
-                [None] + categorical_columns,
+                group_options,
                 help="Optional: Color histogram by categorical variable"
             )
+            group_column = categorical_mapping.get(group_column_display) if group_column_display != "None" else None
             
         elif chart_type == "Scatter Plot":
             # Include all available numeric columns (original + converted)
             all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
             available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            numeric_mapping_all = create_column_mapping(available_numeric)
             
-            x_column = st.selectbox("X-axis", available_numeric)
-            y_column = st.selectbox("Y-axis", available_numeric)
-            group_column = st.selectbox(
+            x_options = list(numeric_mapping_all.keys())
+            y_options = list(numeric_mapping_all.keys())
+            
+            x_column_display = st.selectbox("X-axis", x_options)
+            y_column_display = st.selectbox("Y-axis", y_options)
+            x_column = numeric_mapping_all.get(x_column_display)
+            y_column = numeric_mapping_all.get(y_column_display)
+            
+            group_options = ["None"] + list(categorical_mapping.keys())
+            group_column_display = st.selectbox(
                 "Color By (optional)",
-                [None] + categorical_columns,
+                group_options,
                 help="Optional: Color points by categorical variable"
             )
+            group_column = categorical_mapping.get(group_column_display) if group_column_display != "None" else None
             
         elif chart_type == "Box Plot":
             all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
             available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            numeric_mapping_all = create_column_mapping(available_numeric)
             
-            x_column = st.selectbox("Numeric Column", available_numeric)
+            x_options = list(numeric_mapping_all.keys())
+            x_column_display = st.selectbox("Numeric Column", x_options)
+            x_column = numeric_mapping_all.get(x_column_display)
             y_column = None
-            group_column = st.selectbox(
+            
+            group_options = ["None"] + list(categorical_mapping.keys())
+            group_column_display = st.selectbox(
                 "Group By (optional)",
-                [None] + categorical_columns,
+                group_options,
                 help="Optional: Create separate box plots for each group"
             )
+            group_column = categorical_mapping.get(group_column_display) if group_column_display != "None" else None
             
         elif chart_type == "Line Chart":
             all_numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
             available_numeric = [col for col in all_numeric_cols if not col.startswith('_encoded_')]
+            numeric_mapping_all = create_column_mapping(available_numeric)
             
-            x_column = st.selectbox("X-axis", all_columns)
-            y_column = st.selectbox("Y-axis", available_numeric)
-            group_column = st.selectbox(
+            x_options = list(all_mapping.keys())
+            y_options = list(numeric_mapping_all.keys())
+            
+            x_column_display = st.selectbox("X-axis", x_options)
+            y_column_display = st.selectbox("Y-axis", y_options)
+            x_column = all_mapping.get(x_column_display)
+            y_column = numeric_mapping_all.get(y_column_display)
+            
+            group_options = ["None"] + list(categorical_mapping.keys())
+            group_column_display = st.selectbox(
                 "Group By (optional)",
-                [None] + categorical_columns,
+                group_options,
                 help="Optional: Create separate lines for each group"
             )
+            group_column = categorical_mapping.get(group_column_display) if group_column_display != "None" else None
         
         st.markdown("---")
         
@@ -285,17 +341,17 @@ def main():
             st.metric("Filtered Records", f"{len(df) - len(filtered_df):,} excluded")
         
         if x_column:
-            st.write(f"**X-axis:** {x_column}")
+            st.write(f"**X-axis:** {format_display_name(x_column)}")
         if y_column:
-            st.write(f"**Y-axis:** {y_column}")
+            st.write(f"**Y-axis:** {format_display_name(y_column)}")
         if group_column:
-            st.write(f"**Grouping:** {group_column}")
+            st.write(f"**Grouping:** {format_display_name(group_column)}")
         
         st.markdown("---")
         
         # Quick stats for selected columns
         if x_column and x_column in filtered_df.columns:
-            st.subheader(f"📊 {x_column} Stats")
+            st.subheader(f"📊 {format_display_name(x_column)} Stats")
             
             if pd.api.types.is_numeric_dtype(filtered_df[x_column]):
                 stats = filtered_df[x_column].describe()
@@ -381,7 +437,7 @@ def generate_chart_insights(df, chart_type, x_column, y_column, group_column):
         if pd.api.types.is_numeric_dtype(df[x_column]):
             mean_val = df[x_column].mean()
             median_val = df[x_column].median()
-            insights.append(f"📈 {x_column}: Mean = {mean_val:.2f}, Median = {median_val:.2f}")
+            insights.append(f"📈 {format_display_name(x_column)}: Mean = {mean_val:.2f}, Median = {median_val:.2f}")
             
             if abs(mean_val - median_val) > 0.1 * mean_val:
                 if mean_val > median_val:
@@ -391,11 +447,11 @@ def generate_chart_insights(df, chart_type, x_column, y_column, group_column):
         else:
             unique_vals = df[x_column].nunique()
             most_common = df[x_column].mode()[0] if len(df[x_column].mode()) > 0 else "N/A"
-            insights.append(f"🏷️ {x_column}: {unique_vals} unique values, most common: {most_common}")
+            insights.append(f"🏷️ {format_display_name(x_column)}: {unique_vals} unique values, most common: {most_common}")
     
     if group_column:
         group_counts = df[group_column].value_counts()
-        insights.append(f"👥 Grouped by {group_column}: {len(group_counts)} categories")
+        insights.append(f"👥 Grouped by {format_display_name(group_column)}: {len(group_counts)} categories")
         
         # Check for imbalanced groups
         min_group = group_counts.min()

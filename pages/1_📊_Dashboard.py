@@ -112,17 +112,38 @@ def main():
         site_performance = pd.DataFrame.from_dict(metrics['site_performance'], orient='index')
         site_performance = site_performance.sort_values('eligibility_rate', ascending=False)
         
+        # Format eligibility rate to percentage with 2 decimal places
+        site_performance['eligibility_rate'] = site_performance['eligibility_rate'].round(2)
+        
+        # Format column names to remove underscores
+        def format_display_name(name: str) -> str:
+            """Convert column name to user-friendly format"""
+            formatted = str(name).replace('_', ' ').title()
+            if 'Id' in formatted:
+                formatted = formatted.replace('Id', 'ID')
+            return formatted
+        
+        # Create display version with formatted column names
+        display_df = site_performance.copy()
+        display_df.columns = [format_display_name(col) for col in display_df.columns]
+        
+        # Format the eligibility rate column to show percentage
+        if 'Eligibility Rate' in display_df.columns:
+            display_df['Eligibility Rate'] = display_df['Eligibility Rate'].apply(lambda x: f"{x:.2f}%")
+        
         # Color code the performance with better contrast
         def color_performance(val):
-            if val >= 80:
+            # Remove % symbol for comparison
+            numeric_val = float(str(val).replace('%', ''))
+            if numeric_val >= 80:
                 color = 'background-color: #c8e6c9; color: #2e7d32; font-weight: bold'  # Light green with dark text
-            elif val >= 60:
+            elif numeric_val >= 60:
                 color = 'background-color: #ffe0b2; color: #ef6c00; font-weight: bold'  # Light orange with dark text
             else:
                 color = 'background-color: #ffcdd2; color: #c62828; font-weight: bold'  # Light red with dark text
             return color
         
-        styled_df = site_performance.style.applymap(color_performance, subset=['eligibility_rate'])
+        styled_df = display_df.style.applymap(color_performance, subset=['Eligibility Rate'])
         st.dataframe(styled_df, use_container_width=True)
     
     st.markdown("---")
