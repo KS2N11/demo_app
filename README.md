@@ -1,6 +1,6 @@
 # Clinical Trial Analytics Demo
 
-A comprehensive Streamlit application for analyzing clinical trial participant data with AI-powered insights and interactive visualizations.
+A comprehensive Streamlit application for analyzing clinical trial participant data with AI-powered insights, interactive visualizations, and advanced forecasting capabilities.
 
 ## 🚀 Features
 
@@ -10,6 +10,7 @@ A comprehensive Streamlit application for analyzing clinical trial participant d
 - **AI-Powered Summaries**: Executive, clinical, and marketing reports
 - **Natural Language Queries**: Ask questions about your data in plain English
 - **Custom Chart Generation**: Create visualizations based on user queries
+- **🔮 Advanced Forecasting & Prediction**: Time series forecasting and scenario analysis
 
 ### Key Metrics Tracked
 - Participant eligibility rates
@@ -23,6 +24,35 @@ A comprehensive Streamlit application for analyzing clinical trial participant d
 - Natural language query processing
 - Custom insight generation
 - Pattern recognition and recommendations
+- **🤖 Forecast Insights**: AI-powered analysis of prediction results
+
+### 🔮 Forecasting & Prediction Features
+
+#### Time Series Forecasting
+- **Automatic Detection**: Intelligently detects time and target columns in any dataset
+- **Multiple Models**: Prophet, ARIMA, and Linear Trend forecasting
+- **Flexible Data Handling**: Works with enrollment data, participant counts, dropout rates, etc.
+- **Interactive Visualizations**: Charts with confidence intervals and trend analysis
+- **AI Insights**: Automated interpretation of forecast results
+
+#### Scenario Analysis
+- **What-If Modeling**: Compare baseline vs. modified scenarios
+- **Parameter Adjustment**: Growth rates, seasonal effects, external impacts
+- **Impact Visualization**: Side-by-side comparison charts
+- **AI-Powered Analysis**: Intelligent interpretation of scenario differences
+
+#### Custom Predictions
+- **Machine Learning Models**: Random Forest and Linear models for classification/regression
+- **Feature Importance**: Understand which factors drive outcomes
+- **Interactive Prediction**: Adjust input parameters to see real-time predictions
+- **Flexible Target Variables**: Predict any outcome variable in your dataset
+
+#### Real-World Applications
+- **Enrollment Forecasting**: Predict future participant enrollment rates
+- **Dropout Prediction**: Forecast participant retention and dropout risks
+- **Site Performance**: Predict site-level outcomes and performance metrics
+- **Resource Planning**: Forecast staffing and resource needs
+- **Timeline Estimation**: Predict trial completion dates and milestones
 
 ## 🛠 Installation
 
@@ -49,9 +79,10 @@ A comprehensive Streamlit application for analyzing clinical trial participant d
    # Edit .env file with your API keys
    ```
 
-4. **Generate sample data**
+4. **Generate sample data (including forecasting examples)**
    ```bash
    python data/generate_data.py
+   python data/generate_forecast_data.py
    ```
 
 5. **Run the application**
@@ -75,6 +106,27 @@ A comprehensive Streamlit application for analyzing clinical trial participant d
 - `bmi`: Body mass index
 - `protocol_deviation`: Any protocol deviations
 - `followup_status`: Current status (Active/Withdrawn/Lost)
+
+### 🔮 Forecasting-Compatible Data
+The forecasting system automatically detects and works with various data formats:
+
+**Time Series Data:**
+- `date`, `enrollment_date`, `visit_date`: Date columns
+- `week_number`, `month_number`: Numeric time periods
+- `weekly_enrollment`, `monthly_dropouts`: Count data over time
+
+**Target Variables (automatically detected):**
+- Any column with keywords: participant, enroll, dropout, complete, active, count, total
+- Numeric columns for regression forecasting
+- Categorical columns for classification prediction
+
+**Example Time Series Format:**
+```csv
+date,site_location,weekly_enrollment,weekly_dropouts,active_participants
+2023-01-01,Site_A,12,2,120
+2023-01-08,Site_A,15,1,134
+2023-01-15,Site_A,11,3,142
+```
 
 ### Sample Data Structure
 ```csv
@@ -139,6 +191,34 @@ OPENAI_MODEL=gpt-4o-mini
 - **Interactive Filtering**: Filter by age, site, risk level, eligibility status
 - **Dynamic Grouping**: Group data by categorical variables
 - **Preset Gallery**: Quick access to common visualizations
+
+### 🔮 Forecasting & Prediction Usage
+
+#### Time Series Forecasting
+1. **Upload Data**: Any CSV with time-related columns
+2. **Auto-Detection**: System automatically identifies time and target columns
+3. **Configure Forecast**: Choose time horizon (7-365 days) and aggregation method
+4. **Select Model**: Prophet (recommended), ARIMA, or Linear Trend
+5. **Generate Forecast**: Get predictions with confidence intervals
+6. **AI Insights**: Receive automated interpretation of results
+
+#### Scenario Analysis
+1. **Generate Baseline**: Create initial forecast
+2. **Modify Parameters**: Adjust growth rates, seasonal effects, external factors
+3. **Compare Scenarios**: View side-by-side impact analysis
+4. **AI Analysis**: Get intelligent interpretation of scenario differences
+
+#### Custom Predictions
+1. **Select Variables**: Choose target and predictor variables
+2. **Train Model**: Automatic model training (Random Forest/Linear)
+3. **Interactive Prediction**: Adjust inputs to see real-time predictions
+4. **Feature Importance**: Understand which factors matter most
+
+**Example Use Cases:**
+- 📈 "When will we reach 500 enrolled participants?"
+- 📉 "What if dropout rates increase by 10%?"
+- 🏢 "How will adding 2 new sites affect enrollment?"
+- ⏰ "Predict trial completion date based on current trends"
 
 ### ⚙️ Advanced Features
 - **Session Management**: Persistent data across page navigation
@@ -249,20 +329,70 @@ demo_app/
 ├── README.md              # Documentation
 │
 ├── data/
-│   ├── generate_data.py   # Synthetic data generator
-│   └── participants_sample.csv  # Sample dataset
+│   ├── generate_data.py           # Synthetic data generator
+│   ├── generate_forecast_data.py  # Forecasting sample data
+│   ├── participants_sample.csv    # Sample dataset
+│   ├── enrollment_time_series.csv # Time series data
+│   └── participant_forecast_data.csv # Forecasting examples
+│
+├── pages/
+│   ├── 1_📊_Dashboard.py          # Main analytics dashboard
+│   ├── 2_🤖_AI_Insights.py        # AI-powered insights
+│   ├── 3_📈_Custom_Charts.py      # Custom visualizations
+│   └── 4_🔮_Forecasting.py        # Forecasting & prediction
 │
 ├── utils/
-│   ├── data_utils.py      # Data processing
-│   ├── chart_utils.py     # Chart generation
-│   └── insights_engine.py # Query processing
+│   ├── data_utils.py       # Data processing
+│   ├── chart_utils.py      # Chart generation
+│   ├── insights_engine.py  # Query processing
+│   └── forecasting_utils.py # Forecasting algorithms
 │
 ├── services/
-│   └── ai_summary.py      # AI integration
+│   └── ai_summary.py       # AI integration & forecast insights
 │
 └── assets/
-    └── styles.css         # Custom styling
+    └── styles.css          # Custom styling
 ```
+
+### 🔮 Forecasting Architecture
+
+```
+┌─────────────────────────────────────┐
+│       Forecasting Frontend          │
+│ Time Series │ Scenarios │ Prediction │
+└─────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│      Auto-Detection Engine          │
+│ Time Columns │ Target Variables     │
+└─────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│      Forecasting Models             │
+│ Prophet │ ARIMA │ Linear Trend      │
+└─────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│     ML Prediction Models            │
+│ Random Forest │ Linear Regression   │
+└─────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│    AI Insights Generation           │
+│ Forecast Analysis │ Scenario Impact │
+└─────────────────────────────────────┘
+```
+
+**Key Components:**
+- **Auto-Detection**: Intelligent column recognition for any dataset structure
+- **Multiple Models**: Prophet (seasonality), ARIMA (trends), Linear (simple)
+- **Scenario Engine**: Parameter adjustment and impact analysis
+- **ML Predictions**: Random Forest for robust feature-based prediction
+- **AI Integration**: Automated interpretation of all results
 
 ## 🎯 Key Features Explained
 

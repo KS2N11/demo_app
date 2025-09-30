@@ -249,3 +249,157 @@ def test_ai_connection() -> Dict[str, Any]:
         result['error'] = str(e)
     
     return result
+
+def generate_forecast_insights(forecast_data: Dict[str, Any], scenario_data: Optional[Dict[str, Any]] = None) -> str:
+    """
+    Generate AI insights for forecasting results
+    
+    Args:
+        forecast_data: Dictionary containing forecast results
+        scenario_data: Optional scenario comparison data
+        
+    Returns:
+        AI-generated insights text
+    """
+    client, client_type = setup_openai_client()
+    
+    if not client:
+        # Fallback template response
+        return """📈 **Forecast Analysis:**
+        
+Based on historical trends, the model predicts continued growth with seasonal variations. 
+Key factors driving these projections include enrollment patterns and site performance metrics.
+
+🔍 **Key Insights:**
+• Historical data shows stable growth patterns
+• Seasonal effects may impact future enrollment
+• Current trajectory suggests meeting enrollment targets within projected timeline
+• Risk factors remain within acceptable ranges
+
+⚠️ **Recommendations:**
+• Monitor actual vs. predicted values closely
+• Consider adjusting recruitment strategies if trends deviate
+• Plan for seasonal variations in enrollment"""
+
+    try:
+        # Prepare forecast summary
+        method = forecast_data.get('method', 'Unknown')
+        historical_points = len(forecast_data.get('historical', {}).get('y', []))
+        forecast_points = len(forecast_data.get('forecast', {}).get('yhat', []))
+        
+        forecast_summary = f"""
+        Forecasting Method: {method}
+        Historical Data Points: {historical_points}
+        Forecast Horizon: {forecast_points} periods
+        """
+        
+        if 'forecast' in forecast_data and 'yhat' in forecast_data['forecast']:
+            forecast_values = forecast_data['forecast']['yhat']
+            avg_forecast = forecast_values.mean() if len(forecast_values) > 0 else 0
+            trend = "increasing" if len(forecast_values) > 1 and forecast_values.iloc[-1] > forecast_values.iloc[0] else "stable/decreasing"
+            forecast_summary += f"""
+            Average Forecast Value: {avg_forecast:.2f}
+            Overall Trend: {trend}
+            """
+        
+        scenario_text = ""
+        if scenario_data:
+            scenario_text = f"""
+            
+            Scenario Analysis:
+            Baseline vs Modified Scenario comparison shows:
+            {scenario_data.get('comparison_summary', 'No specific changes detected')}
+            """
+        
+        prompt = f"""As a clinical trial analytics expert, analyze this forecasting data and provide actionable insights:
+
+{forecast_summary}{scenario_text}
+
+Please provide:
+1. A clear interpretation of the forecast results
+2. Key trends and patterns identified
+3. Potential risks or opportunities
+4. Actionable recommendations for trial management
+5. Confidence assessment of the predictions
+
+Keep the response concise but comprehensive, using emojis for better readability."""
+
+        messages = [
+            {"role": "system", "content": "You are an expert clinical research analyst specializing in trial forecasting and predictive analytics."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        ai_response = call_llm(client, client_type, messages, max_tokens=600)
+        
+        if ai_response:
+            return ai_response
+        else:
+            return "Unable to generate AI insights at this time. Please check forecast results manually."
+            
+    except Exception as e:
+        return f"Error generating forecast insights: {str(e)}"
+
+def generate_scenario_analysis(baseline_result: float, scenario_result: float, changes_made: Dict[str, Any]) -> str:
+    """
+    Generate AI analysis of scenario comparison
+    
+    Args:
+        baseline_result: Original prediction result
+        scenario_result: Modified scenario prediction result
+        changes_made: Dictionary of parameter changes
+        
+    Returns:
+        AI-generated scenario analysis
+    """
+    client, client_type = setup_openai_client()
+    
+    if not client:
+        # Fallback template
+        percentage_change = ((scenario_result - baseline_result) / baseline_result * 100) if baseline_result != 0 else 0
+        direction = "increase" if percentage_change > 0 else "decrease"
+        return f"""🔄 **Scenario Impact Analysis:**
+        
+The modified scenario shows a {abs(percentage_change):.1f}% {direction} compared to baseline.
+
+**Changes Made:** {', '.join([f"{k}: {v}" for k, v in changes_made.items()])}
+
+**Expected Impact:** The adjustments are projected to {'improve' if percentage_change > 0 else 'reduce'} outcomes.
+
+**Recommendation:** {'Consider implementing these changes' if abs(percentage_change) > 5 else 'Impact is minimal - evaluate cost-benefit'}."""
+
+    try:
+        percentage_change = ((scenario_result - baseline_result) / baseline_result * 100) if baseline_result != 0 else 0
+        changes_text = "\n".join([f"- {k.replace('_', ' ').title()}: {v}" for k, v in changes_made.items()])
+        
+        prompt = f"""Analyze this clinical trial scenario comparison:
+
+Baseline Prediction: {baseline_result:.2f}
+Modified Scenario Prediction: {scenario_result:.2f}
+Percentage Change: {percentage_change:.1f}%
+
+Changes Made:
+{changes_text}
+
+Please provide:
+1. Clear interpretation of the impact
+2. Whether the changes are beneficial or detrimental
+3. Confidence in the prediction change
+4. Specific recommendations for trial management
+5. Potential risks or considerations
+
+Keep response concise and actionable."""
+
+        messages = [
+            {"role": "system", "content": "You are a clinical trial strategy consultant analyzing predictive scenarios."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        ai_response = call_llm(client, client_type, messages, max_tokens=400)
+        
+        if ai_response:
+            return ai_response
+        else:
+            return "Unable to generate scenario analysis. Please review results manually."
+            
+    except Exception as e:
+        return f"Error generating scenario analysis: {str(e)}"

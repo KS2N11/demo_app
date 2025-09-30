@@ -1,0 +1,201 @@
+participant_id,enrollment_date,age,gender,site_location,bmi_value,dropout_risk,treatment_group,baseline_score,days_in_study,completion_status,is_eligible,protocol_deviations,visit_adherence
+P001,2023-04-13,21.7,Female,Site_D,25.3,Low,Treatment,81.2,901,Lost to Follow-up,True,0,88.08475201010006
+P002,2023-09-28,23.3,Female,Site_D,18.2,Low,Control,75.6,733,Lost to Follow-up,True,0,92.5239454801926
+P003,2023-04-17,57.2,Female,Site_A,26.9,Medium,Treatment,77.3,897,Lost to Follow-up,True,0,89.39608709948021
+P004,2023-03-13,34.3,Male,Site_B,16.0,Low,Control,61.7,932,Completed,True,0,84.62068561643308
+P005,2023-07-08,51.3,Female,Site_E,17.5,Low,Treatment,74.7,815,Completed,True,0,79.40321215524456
+P006,2023-01-21,52.6,Female,Site_D,25.2,Medium,Treatment,72.8,983,Completed,False,0,95.71000741138138
+P007,2023-04-13,38.2,Male,Site_A,28.1,Low,Treatment,69.9,901,Lost to Follow-up,True,0,88.46430584417699
+P008,2023-05-02,32.9,Female,Site_B,21.6,Low,Treatment,79.5,882,Completed,True,0,100.0
+P009,2023-08-03,34.0,Male,Site_D,25.8,Medium,Control,86.4,789,Withdrawn,False,0,73.40762178193643
+P010,2023-03-29,41.4,Female,Site_C,34.3,Medium,Treatment,70.9,916,Completed,True,0,86.20298068811222
+P011,2023-04-10,46.0,Female,Site_D,20.7,Low,Control,80.2,904,Completed,True,0,83.3920828725831
+P012,2023-06-01,37.7,Male,Site_B,21.9,Medium,Treatment,70.3,852,Withdrawn,True,0,75.20006151139432
+P013,2023-05-11,50.7,Female,Site_C,31.6,Medium,Control,62.2,873,Completed,True,0,81.43912058189997
+P014,2023-05-30,73.1,Male,Site_E,19.8,Medium,Treatment,91.3,854,Withdrawn,True,0,63.54787933059051
+P015,2023-09-15,45.9,Female,Site_E,34.4,High,Control,90.4,746,Lost to Follow-up,False,0,94.11757810502206
+P016,2023-10-21,60.5,Female,Site_A,33.5,Medium,Control,79.4,710,Lost to Follow-up,True,0,83.3725316715473
+P017,2023-07-11,49.2,Male,Site_E,22.5,Low,Treatment,83.5,812,Withdrawn,True,1,75.55448714102332
+P018,2023-10-04,58.2,Male,Site_A,32.5,High,Control,71.3,727,Withdrawn,False,0,76.78414775561006
+P019,2023-06-10,56.5,Female,Site_C,20.6,Medium,Treatment,75.2,843,Lost to Follow-up,True,0,89.86249528732664
+P020,2023-01-22,43.0,Female,Site_C,21.6,Low,Treatment,86.2,982,Completed,False,1,100.0
+P021,2023-09-10,49.9,Female,Site_D,31.7,Medium,Control,80.0,751,Lost to Follow-up,True,0,98.29302949194063
+P022,2023-08-24,41.5,Male,Site_E,19.2,Low,Control,68.4,768,Completed,True,0,100.0
+P023,2023-02-18,57.9,Male,Site_C,24.4,Medium,Treatment,60.1,955,Withdrawn,True,1,68.436673171793
+P024,2023-02-28,56.4,Male,Site_D,27.8,Medium,Treatment,75.7,945,Lost to Follow-up,True,0,99.75256459537698
+P025,2023-06-19,45.4,Female,Site_A,27.0,Medium,Control,93.2,834,Completed,True,2,63.20725811391459
+P026,2023-07-07,56.8,Male,Site_B,19.6,Low,Treatment,61.7,816,Completed,True,0,73.43191807627429
+P027,2023-09-28,70.9,Male,Site_E,19.0,Low,Control,93.3,733,Lost to Follow-up,True,0,100.0
+P028,2023-07-09,38.0,Female,Site_A,30.5,Medium,Treatment,77.6,814,Completed,True,0,100.0
+P029,2023-06-24,50.1,Female,Site_C,32.6,High,Control,78.1,829,Lost to Follow-up,True,0,64.47114826687215
+P030,2023-02-20,53.0,Female,Site_B,21.7,Low,Control,90.5,953,Withdrawn,False,0,86.73511951439288
+P031,2023-02-24,60.4,Male,Site_E,25.7,Medium,Treatment,83.8,949,Completed,True,0,59.03690344351649
+P032,2023-09-01,66.7,Male,Site_B,25.8,Low,Control,91.3,760,Lost to Follow-up,False,0,64.29847812677663
+P033,2023-05-11,44.8,Male,Site_E,28.2,Medium,Treatment,79.0,873,Withdrawn,True,0,68.48122142729332
+P034,2023-05-15,52.3,Male,Site_C,25.2,Medium,Control,61.3,869,Lost to Follow-up,True,0,92.56160289535802
+P035,2023-01-21,45.8,Female,Site_D,23.0,Low,Treatment,63.0,983,Withdrawn,True,1,97.77031396900765
+P036,2023-06-16,35.7,Female,Site_E,25.1,Low,Control,82.7,837,Withdrawn,True,0,73.29484968913428
+P037,2023-10-01,58.0,Female,Site_D,26.9,Medium,Treatment,65.4,730,Completed,True,0,75.3014067363621
+P038,2023-03-30,28.8,Male,Site_A,23.6,Low,Treatment,72.0,915,Withdrawn,True,0,100.0
+P039,2023-01-14,67.2,Male,Site_E,32.9,High,Treatment,61.9,990,Completed,False,0,79.57865740859535
+P040,2023-08-30,41.4,Male,Site_D,28.2,Medium,Treatment,74.9,762,Withdrawn,True,0,91.77116797971247
+P041,2023-09-22,18.8,Female,Site_E,35.5,Medium,Treatment,65.0,739,Withdrawn,True,0,62.13564200245012
+P042,2023-02-22,57.0,Female,Site_C,24.2,Medium,Treatment,67.5,951,Withdrawn,True,0,52.91799527786027
+P043,2023-04-02,36.3,Male,Site_A,26.0,Medium,Treatment,89.4,912,Completed,True,3,87.54593926585561
+P044,2023-09-21,46.3,Male,Site_C,25.7,Medium,Treatment,80.8,740,Withdrawn,True,1,92.45937666746163
+P045,2023-02-04,54.8,Female,Site_A,19.8,Low,Control,84.5,969,Completed,True,0,100.0
+P046,2023-07-25,32.3,Female,Site_A,20.2,Low,Treatment,52.1,798,Completed,True,0,100.0
+P047,2023-03-22,70.6,Female,Site_E,24.9,Medium,Treatment,66.5,923,Withdrawn,True,0,92.18469738619588
+P048,2023-02-19,50.0,Male,Site_E,23.9,Low,Control,70.7,954,Withdrawn,True,0,76.71031339979491
+P049,2023-01-02,51.2,Male,Site_E,32.5,Medium,Treatment,68.2,1002,Completed,True,1,80.96748734807237
+P050,2023-02-23,38.4,Female,Site_C,25.4,Medium,Control,77.2,950,Completed,True,0,91.6317499797021
+P051,2023-04-16,68.9,Female,Site_C,23.0,Medium,Control,73.7,898,Lost to Follow-up,True,2,59.613030554277714
+P052,2023-09-17,67.9,Male,Site_A,27.5,Medium,Control,72.9,744,Lost to Follow-up,False,0,70.78690319071131
+P053,2023-07-10,57.6,Female,Site_C,24.8,Low,Treatment,73.5,813,Completed,True,1,100.0
+P054,2023-08-06,61.9,Male,Site_E,26.8,Medium,Treatment,86.1,786,Withdrawn,True,0,87.63934985831867
+P055,2023-02-13,31.9,Male,Site_C,18.6,Low,Control,53.8,960,Completed,True,0,100.0
+P056,2023-06-11,30.0,Female,Site_D,22.7,Low,Control,72.0,842,Completed,True,0,74.26285196697074
+P057,2023-07-21,46.0,Female,Site_D,28.8,Medium,Treatment,53.3,802,Completed,True,0,97.18840894544596
+P058,2023-09-27,18.0,Female,Site_D,23.6,Low,Treatment,82.1,734,Lost to Follow-up,True,0,91.6639496722906
+P059,2023-09-28,35.1,Female,Site_B,21.3,Low,Control,92.6,733,Lost to Follow-up,True,0,100.0
+P060,2023-08-03,18.7,Male,Site_E,29.7,Low,Treatment,71.3,789,Lost to Follow-up,True,0,92.08594964259038
+P061,2023-09-09,49.3,Female,Site_A,25.2,Medium,Control,47.2,752,Withdrawn,True,0,69.98924263084983
+P062,2023-07-09,72.8,Male,Site_E,22.8,Medium,Treatment,58.7,814,Withdrawn,True,1,93.27795482964251
+P063,2023-10-23,69.3,Female,Site_B,31.3,High,Treatment,83.1,708,Withdrawn,True,0,79.77980370554742
+P064,2023-08-01,48.0,Female,Site_B,28.3,Medium,Control,80.4,791,Completed,False,0,86.99404277834036
+P065,2023-07-27,18.7,Female,Site_C,24.5,Low,Treatment,76.2,796,Withdrawn,True,1,87.69768128092089
+P066,2023-08-25,40.0,Female,Site_C,21.2,Medium,Treatment,71.9,767,Lost to Follow-up,False,1,75.11652367035695
+P067,2023-02-22,32.0,Female,Site_C,25.2,Low,Control,81.2,951,Withdrawn,True,0,62.101722074533804
+P068,2023-10-07,44.1,Female,Site_E,23.8,Low,Treatment,55.5,724,Completed,True,0,80.80751401299939
+P069,2023-08-05,42.1,Female,Site_D,21.1,Low,Control,83.9,787,Completed,True,0,69.36272688659292
+P070,2023-09-09,64.2,Female,Site_D,30.3,Medium,Treatment,87.3,752,Withdrawn,True,1,97.54091576739285
+P071,2023-07-07,48.8,Male,Site_E,24.9,Medium,Control,75.5,816,Lost to Follow-up,True,1,100.0
+P072,2023-02-10,39.6,Female,Site_A,23.2,Medium,Treatment,66.3,963,Completed,True,0,96.9048691297053
+P073,2023-06-06,29.9,Male,Site_A,21.9,Low,Treatment,66.2,847,Lost to Follow-up,True,0,89.11008677628357
+P074,2023-01-15,45.8,Female,Site_C,24.6,Medium,Treatment,70.2,989,Lost to Follow-up,True,0,93.95959062197961
+P075,2023-03-06,38.8,Female,Site_E,24.6,Medium,Control,69.3,939,Completed,True,0,88.04384531276949
+P076,2023-01-09,22.3,Female,Site_E,22.5,Low,Control,80.4,995,Withdrawn,True,0,100.0
+P077,2023-05-09,24.3,Female,Site_B,22.1,Low,Treatment,75.4,875,Lost to Follow-up,False,0,85.64907542116435
+P078,2023-05-16,60.5,Female,Site_C,30.3,Medium,Treatment,80.8,868,Withdrawn,True,1,79.61061863819411
+P079,2023-03-04,57.3,Female,Site_B,27.0,Medium,Treatment,68.7,941,Lost to Follow-up,False,0,76.87151313417178
+P080,2023-05-19,54.6,Female,Site_B,26.7,Medium,Treatment,76.9,865,Withdrawn,True,0,85.69654822234223
+P081,2023-03-22,67.4,Male,Site_B,25.9,Medium,Treatment,72.6,923,Completed,True,1,92.3562935755415
+P082,2023-06-12,35.9,Female,Site_A,22.7,Medium,Control,57.9,841,Completed,True,0,100.0
+P083,2023-10-16,36.5,Male,Site_B,27.9,Low,Treatment,53.0,715,Withdrawn,True,0,88.65701070656799
+P084,2023-09-18,36.5,Female,Site_C,17.6,Low,Treatment,84.4,743,Completed,False,0,97.90144576214604
+P085,2023-08-19,27.6,Female,Site_D,35.3,Medium,Control,72.7,773,Withdrawn,True,1,87.94781754552206
+P086,2023-02-10,55.6,Female,Site_A,19.3,Low,Treatment,69.3,963,Withdrawn,True,0,78.03413385079392
+P087,2023-01-28,49.4,Male,Site_E,24.8,Medium,Treatment,68.1,976,Withdrawn,True,0,90.58197086639741
+P088,2023-05-15,52.2,Male,Site_C,23.9,Low,Control,75.0,869,Withdrawn,True,0,67.62452966211185
+P089,2023-07-20,31.9,Male,Site_A,25.2,Low,Treatment,85.8,803,Lost to Follow-up,True,0,90.27836601859654
+P090,2023-09-25,47.0,Male,Site_C,25.2,Low,Control,78.9,736,Lost to Follow-up,True,1,95.22167620535929
+P091,2023-02-02,46.7,Female,Site_B,28.8,Medium,Treatment,74.8,971,Completed,True,0,80.5254475817283
+P092,2023-02-17,77.5,Female,Site_C,27.1,Medium,Control,104.7,956,Withdrawn,True,2,83.55056640065169
+P093,2023-03-03,54.2,Male,Site_A,20.9,Low,Control,78.5,942,Completed,True,0,98.10674561440173
+P094,2023-08-04,56.5,Female,Site_B,25.9,Medium,Treatment,73.9,788,Lost to Follow-up,False,0,100.0
+P095,2023-10-20,54.8,Female,Site_D,18.7,Low,Control,52.2,711,Completed,True,0,100.0
+P096,2023-04-09,64.1,Male,Site_B,26.3,Medium,Treatment,80.4,905,Completed,True,0,79.44078501870841
+P097,2023-06-21,27.7,Male,Site_A,26.3,Medium,Treatment,72.0,832,Withdrawn,True,0,73.49570141676354
+P098,2023-08-02,33.6,Female,Site_B,32.8,Medium,Treatment,96.9,790,Lost to Follow-up,True,0,66.10120050440267
+P099,2023-02-04,66.1,Male,Site_D,18.6,Medium,Control,74.1,969,Withdrawn,False,0,80.09678830480523
+P100,2023-08-15,36.7,Male,Site_E,24.5,Low,Control,75.8,777,Completed,True,2,55.026989732018386
+P101,2023-04-11,47.1,Female,Site_C,26.8,Medium,Treatment,73.6,903,Completed,True,0,94.19160857593855
+P102,2023-05-11,29.2,Female,Site_A,22.1,Low,Treatment,74.0,873,Completed,True,1,84.59808480046505
+P103,2023-09-14,48.0,Female,Site_A,24.0,Medium,Treatment,63.6,747,Withdrawn,True,0,84.0379248011051
+P104,2023-01-05,49.9,Female,Site_A,24.0,Low,Treatment,87.2,999,Lost to Follow-up,True,2,95.41350115728974
+P105,2023-08-06,40.2,Male,Site_A,28.8,Medium,Control,60.4,786,Withdrawn,True,0,100.0
+P106,2023-09-12,78.7,Male,Site_B,20.2,Medium,Control,75.0,749,Withdrawn,False,2,100.0
+P107,2023-10-10,20.5,Female,Site_C,25.7,Low,Control,80.8,721,Lost to Follow-up,True,0,81.20971467998554
+P108,2023-07-26,50.9,Female,Site_D,24.2,Medium,Treatment,58.1,797,Completed,True,1,83.52490559807875
+P109,2023-01-15,58.8,Female,Site_A,18.7,Low,Control,75.6,989,Withdrawn,True,0,76.49807240430852
+P110,2023-02-11,52.9,Female,Site_D,30.6,Medium,Treatment,76.3,962,Lost to Follow-up,True,1,78.5589168831212
+P111,2023-06-28,34.5,Female,Site_B,22.3,Low,Control,72.5,825,Withdrawn,True,0,95.3904898899132
+P112,2023-03-04,51.9,Female,Site_A,26.0,Low,Treatment,63.1,941,Withdrawn,False,0,89.64731065340541
+P113,2023-08-19,63.4,Female,Site_B,31.5,High,Treatment,61.5,773,Completed,True,0,75.73280981115077
+P114,2023-08-29,73.4,Male,Site_A,27.3,High,Treatment,64.0,763,Completed,True,0,74.33052062859193
+P115,2023-02-21,48.5,Female,Site_B,18.8,Low,Treatment,82.3,952,Completed,True,0,55.733222877267146
+P116,2023-04-06,35.6,Female,Site_B,21.0,Low,Treatment,73.9,908,Withdrawn,True,0,71.44138537802816
+P117,2023-08-10,37.0,Male,Site_E,19.4,Low,Treatment,82.6,782,Withdrawn,True,0,91.37768263412053
+P118,2023-08-19,50.0,Female,Site_D,27.8,Medium,Treatment,64.3,773,Completed,True,1,71.65380847320147
+P119,2023-08-25,32.3,Male,Site_D,18.6,Low,Treatment,89.0,767,Completed,True,0,100.0
+P120,2023-05-23,55.2,Female,Site_B,26.1,Medium,Control,69.9,861,Completed,True,0,81.45467894366506
+P121,2023-06-20,45.4,Female,Site_A,25.0,Low,Treatment,101.3,833,Withdrawn,True,2,73.00691618150974
+P122,2023-01-29,50.3,Female,Site_D,27.0,Medium,Treatment,75.6,975,Completed,True,0,55.36800150469193
+P123,2023-02-05,53.1,Female,Site_C,19.9,Medium,Treatment,54.8,968,Completed,True,1,76.02259574925496
+P124,2023-01-13,18.9,Male,Site_E,23.5,Low,Treatment,71.1,991,Withdrawn,False,1,87.55624333563232
+P125,2023-06-09,59.2,Female,Site_B,19.1,Low,Treatment,72.8,844,Completed,True,0,76.35234398909921
+P126,2023-07-06,18.0,Male,Site_E,22.8,Low,Treatment,65.1,817,Withdrawn,True,1,84.53591504266564
+P127,2023-08-31,27.1,Male,Site_D,24.8,Low,Control,80.3,761,Lost to Follow-up,True,1,89.37174884817709
+P128,2023-03-27,34.0,Female,Site_B,18.6,Low,Control,96.6,918,Withdrawn,False,0,75.91427615494993
+P129,2023-10-11,35.4,Female,Site_C,25.7,Low,Treatment,74.2,720,Withdrawn,True,1,85.1503495336338
+P130,2023-03-07,36.9,Male,Site_D,29.8,Medium,Control,70.5,938,Completed,True,1,78.45919768525181
+P131,2023-06-19,54.1,Male,Site_B,30.2,Medium,Control,73.8,834,Completed,False,0,83.9039654738939
+P132,2023-02-14,29.0,Male,Site_E,31.1,Medium,Control,66.5,959,Completed,False,0,90.38814100686761
+P133,2023-03-03,29.3,Male,Site_A,17.1,Low,Control,67.4,942,Withdrawn,True,0,96.19281110971605
+P134,2023-05-14,39.6,Male,Site_B,20.0,Low,Control,78.7,870,Completed,True,0,100.0
+P135,2023-10-11,32.6,Female,Site_E,28.6,Low,Control,74.1,720,Lost to Follow-up,True,0,92.41665121125428
+P136,2023-01-28,55.9,Female,Site_E,27.6,Medium,Treatment,85.0,976,Completed,True,0,88.07540030592818
+P137,2023-04-18,53.9,Female,Site_D,28.1,Medium,Control,66.5,896,Completed,True,0,67.06175406947224
+P138,2023-02-13,51.7,Male,Site_E,31.6,High,Control,78.1,960,Completed,True,1,89.78999784540079
+P139,2023-10-13,54.5,Female,Site_C,26.9,Medium,Control,71.0,718,Withdrawn,True,0,62.11515528144858
+P140,2023-05-08,63.9,Female,Site_D,28.9,Medium,Treatment,69.6,876,Completed,True,0,89.55167126386068
+P141,2023-08-19,80.0,Female,Site_D,23.6,Medium,Treatment,88.1,773,Completed,True,1,86.32610329437772
+P142,2023-07-09,67.2,Male,Site_D,26.4,Medium,Treatment,69.2,814,Lost to Follow-up,True,0,82.43126236844371
+P143,2023-08-13,31.8,Female,Site_D,22.8,Low,Treatment,77.6,779,Lost to Follow-up,True,0,66.19977710317171
+P144,2023-10-10,50.2,Male,Site_B,27.0,Medium,Treatment,91.8,721,Lost to Follow-up,True,0,96.02340255211507
+P145,2023-05-01,38.8,Male,Site_E,27.1,Low,Control,67.0,883,Withdrawn,True,0,80.88657464418203
+P146,2023-04-26,30.0,Female,Site_A,24.6,Low,Treatment,78.6,888,Completed,True,1,81.68330357067248
+P147,2023-08-21,37.1,Male,Site_B,24.9,Low,Treatment,82.8,771,Withdrawn,True,0,90.26933214136812
+P148,2023-09-16,70.3,Male,Site_E,24.6,Medium,Treatment,82.9,745,Completed,True,0,66.18565865246126
+P149,2023-07-17,46.2,Male,Site_A,26.4,Low,Control,73.4,806,Withdrawn,False,0,100.0
+P150,2023-05-17,18.0,Female,Site_A,21.7,Low,Treatment,62.3,867,Lost to Follow-up,True,0,84.13024078851649
+P151,2023-06-14,18.0,Female,Site_D,21.0,Low,Control,67.7,839,Completed,True,1,74.36449432502943
+P152,2023-08-13,37.3,Male,Site_D,19.2,Low,Control,72.1,779,Lost to Follow-up,True,0,61.552137869550144
+P153,2023-08-22,44.1,Female,Site_A,22.1,Medium,Treatment,70.4,770,Completed,True,0,64.63895560320684
+P154,2023-06-21,41.1,Male,Site_D,26.5,Medium,Control,70.5,832,Lost to Follow-up,True,0,100.0
+P155,2023-06-01,59.7,Male,Site_C,27.6,Medium,Treatment,72.3,852,Withdrawn,True,0,100.0
+P156,2023-06-09,33.1,Female,Site_E,33.3,Medium,Treatment,76.9,844,Withdrawn,False,0,88.61857206483022
+P157,2023-04-06,29.1,Female,Site_C,26.7,Medium,Control,100.9,908,Lost to Follow-up,True,0,90.07725765192536
+P158,2023-08-21,40.6,Female,Site_B,26.1,Low,Control,77.8,771,Completed,True,1,95.98210845227675
+P159,2023-06-29,20.6,Male,Site_B,25.6,Low,Treatment,71.3,824,Completed,True,1,62.223265840528896
+P160,2023-04-23,63.7,Female,Site_C,23.1,Medium,Treatment,70.1,891,Completed,True,0,89.45964468521264
+P161,2023-02-21,52.0,Female,Site_C,21.0,Low,Treatment,94.4,952,Completed,True,0,92.70861774488372
+P162,2023-09-25,47.7,Female,Site_A,27.5,Medium,Treatment,77.7,736,Withdrawn,True,0,94.75572683081903
+P163,2023-10-22,61.6,Female,Site_C,24.5,Medium,Treatment,71.2,709,Completed,True,0,93.1130383372202
+P164,2023-04-23,58.3,Female,Site_E,28.6,Medium,Treatment,78.7,891,Completed,True,0,100.0
+P165,2023-04-11,18.0,Female,Site_C,23.8,Low,Treatment,66.1,903,Completed,False,1,93.38738933354777
+P166,2023-04-23,78.8,Female,Site_D,25.3,High,Treatment,78.5,891,Completed,True,1,100.0
+P167,2023-03-22,54.8,Male,Site_D,35.8,High,Treatment,83.8,923,Completed,True,0,83.8369927720901
+P168,2023-07-06,54.5,Female,Site_C,25.3,Low,Treatment,72.4,817,Withdrawn,False,0,48.95869097650469
+P169,2023-04-23,45.7,Female,Site_A,31.8,Medium,Treatment,77.1,891,Completed,True,0,76.56079775757016
+P170,2023-01-02,79.2,Male,Site_D,25.3,Medium,Treatment,85.8,1002,Withdrawn,True,0,76.3370485973867
+P171,2023-05-10,42.6,Male,Site_A,27.7,Medium,Control,88.3,874,Withdrawn,True,0,84.03894549807254
+P172,2023-08-08,36.1,Female,Site_E,19.5,Low,Treatment,77.7,784,Withdrawn,True,2,92.63087534844901
+P173,2023-02-23,47.2,Female,Site_B,22.5,Medium,Control,80.9,950,Completed,True,0,81.92180538251206
+P174,2023-08-12,57.9,Male,Site_A,25.7,Medium,Control,86.8,780,Completed,True,1,58.99024705873971
+P175,2023-08-13,50.7,Male,Site_B,27.5,Medium,Control,76.2,779,Lost to Follow-up,True,0,72.46068880628955
+P176,2023-05-06,43.5,Male,Site_E,25.6,Low,Treatment,83.6,878,Lost to Follow-up,True,0,100.0
+P177,2023-05-10,27.1,Male,Site_B,28.7,Low,Treatment,79.6,874,Completed,True,1,80.91358448133563
+P178,2023-02-22,43.9,Male,Site_B,24.0,Low,Treatment,71.9,951,Completed,True,0,96.6949079840401
+P179,2023-06-21,23.8,Male,Site_C,29.9,Medium,Control,63.2,832,Completed,True,1,72.85594720117531
+P180,2023-08-06,51.4,Female,Site_C,20.5,Low,Treatment,57.3,786,Completed,True,0,63.23540106338368
+P181,2023-06-09,45.7,Male,Site_D,24.8,Medium,Control,71.7,844,Lost to Follow-up,False,0,83.39046783993656
+P182,2023-07-17,51.7,Male,Site_D,24.9,Medium,Treatment,69.8,806,Lost to Follow-up,True,1,74.85242317826297
+P183,2023-09-04,45.5,Female,Site_E,19.7,Low,Treatment,79.9,757,Withdrawn,True,0,81.92069362767849
+P184,2023-07-22,80.0,Male,Site_A,21.4,Medium,Treatment,73.1,801,Withdrawn,True,1,100.0
+P185,2023-07-03,70.0,Male,Site_D,31.2,Medium,Control,75.8,820,Completed,True,2,88.25821464471015
+P186,2023-05-03,39.8,Female,Site_B,38.0,Medium,Treatment,95.8,881,Lost to Follow-up,True,0,67.64020019523274
+P187,2023-09-12,43.4,Male,Site_D,28.8,Medium,Control,88.9,749,Completed,True,0,69.65158350785053
+P188,2023-10-21,33.1,Male,Site_C,27.4,Low,Control,94.6,710,Withdrawn,True,0,81.37878384369691
+P189,2023-10-07,30.4,Female,Site_C,19.5,Low,Treatment,80.1,724,Completed,True,1,91.32069716647123
+P190,2023-04-08,36.1,Female,Site_A,27.3,Medium,Control,74.7,906,Completed,True,0,71.77188023158423
+P191,2023-07-17,42.1,Male,Site_D,22.8,Medium,Treatment,81.7,806,Completed,False,0,82.95328804968743
+P192,2023-08-28,20.7,Male,Site_B,18.6,Low,Treatment,83.7,764,Lost to Follow-up,True,1,75.55142117922381
+P193,2023-05-24,21.9,Female,Site_E,24.5,Low,Treatment,70.2,860,Withdrawn,False,0,88.2884750163246
+P194,2023-04-07,64.3,Female,Site_B,28.2,Medium,Control,77.4,907,Withdrawn,True,1,100.0
+P195,2023-07-20,18.0,Male,Site_B,24.9,Low,Treatment,84.4,803,Completed,True,1,98.27490079121665
+P196,2023-05-04,48.1,Female,Site_A,26.9,Medium,Treatment,76.8,880,Lost to Follow-up,True,2,69.20552382399539
+P197,2023-07-06,54.0,Female,Site_A,24.3,Medium,Treatment,94.8,817,Withdrawn,True,0,92.83365521872015
+P198,2023-09-16,32.8,Female,Site_A,22.4,Low,Control,97.4,745,Lost to Follow-up,True,0,78.84577846043504
+P199,2023-05-28,59.7,Female,Site_B,23.8,Medium,Treatment,81.3,856,Lost to Follow-up,True,0,100.0
+P200,2023-09-09,35.7,Male,Site_C,28.4,Medium,Control,81.7,752,Completed,True,1,82.53375339307928

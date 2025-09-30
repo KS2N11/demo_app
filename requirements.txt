@@ -4,3 +4,8 @@ matplotlib
 openai
 plotly
 python-dotenv
+prophet
+scikit-learn
+statsmodels
+numpy
+scipy
